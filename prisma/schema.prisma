@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum CartStatus {
+  ACTIVE
+  CONVERTED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum Gender {
+  MEN
+  WOMEN
+  UNISEX
+}
+
+// Users
+model User {
+  id       String  @id @default(cuid())
+  name     String?
+  email    String  @unique
+  phone    String? @unique
+  password String?
+  role     Role    @default(CUSTOMER)
+
+  carts     Cart[]
+  orders    Order[]
+  addresses UserAddress[]
+  reviews   Review[]
+  questions Question[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Categories + Subcategories
+model Category {
+  id       String     @id @default(cuid())
+  name     String     @unique
+  slug     String     @unique
+  parentId String?
+  parent   Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  children Category[] @relation("Subcategories")
+
+  products Product[]
+}
+
+// Products & Variants
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  price       Int // base price in paise
+  stock       Int // only used if no variants
+  isActive    Boolean @default(true)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  gender Gender?
+
+  images     ProductImage[]
+  variants   ProductVariant[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  questions  Question[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model ProductVariant {
+  id        String @id @default(cuid())
+  productId String
+  size      String // "S", "M", "L", "XL", etc.
+  price     Int
+  stock     Int
+
+  product    Product     @relation(fields: [productId], references: [id])
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+// Product Images (Cloudinary)
+model ProductImage {
+  id        String @id @default(cuid())
+  url       String
+  publicId  String
+  productId String
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// Cart & Cart Items
+model Cart {
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  status CartStatus @default(ACTIVE)
+  items  CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  productId String? // null if variant used
+  variantId String? // null if product has no variants
+  quantity  Int 
+
+  cart    Cart            @relation(fields: [cartId], references: [id])
+  product Product?        @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@unique([cartId, productId, variantId])
+}
+
+// Orders & Order Items
+model Order {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  totalAmount Int
+  status      OrderStatus @default(PENDING)
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  paymentCaptured   Boolean @default(false) // money actually received
+
+  items   OrderItem[]
+  address OrderAddress?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reviews   Review[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  variantId String? // optional
+  price     Int // capture price at purchase time
+  quantity  Int
+
+  order   Order           @relation(fields: [orderId], references: [id])
+  product Product         @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+}
+
+// Checkout / Order Address
+model OrderAddress {
+  id      String @id @default(cuid())
+  orderId String @unique
+
+  fullName     String
+  email        String?
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String @default("Kolkata")
+  state        String @default("West Bengal")
+  postalCode   String
+  country      String @default("India")
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+// User Saved Addresses
+model UserAddress {
+  id     String @id @default(cuid())
+  userId String
+
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  isDefault    Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// Reviews (1 per user per order/product)
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  orderId   String // ensures only buyers can review
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+
+  @@unique([userId, productId, orderId])
+}
+
+// Questions (customer Q&A)
+model Question {
+  id         String    @id @default(cuid())
+  userId     String
+  productId  String
+  question   String
+  answer     String? // filled by admin
+  createdAt  DateTime  @default(now())
+  answeredAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
