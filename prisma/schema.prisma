@@ -39,6 +39,20 @@ enum Gender {
   UNISEX
 }
 
+enum NotificationType {
+  ORDER_PLACED
+  ORDER_STATUS_UPDATE
+  QUESTION_ANSWERED
+  REVIEW_APPROVED
+  SYSTEM
+}
+
+enum NotificationAudience {
+  ADMIN
+  CUSTOMER
+}
+
+
 // Users
 model User {
   id       String  @id @default(cuid())
@@ -53,6 +67,8 @@ model User {
   addresses UserAddress[]
   reviews   Review[]
   questions Question[]
+  notifications Notification[]
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -219,6 +235,26 @@ model UserAddress {
 
   user User @relation(fields: [userId], references: [id])
 }
+
+// Notifications
+model Notification {
+  id        String @id @default(cuid())
+
+  userId    String?  // null for admin-wide notifications
+  user      User?    @relation(fields: [userId], references: [id])
+
+  audience  NotificationAudience
+  type      NotificationType
+
+  title     String
+  message   String
+
+  entityId  String? // orderId, productId, questionId, etc.
+  isRead    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
 
 // Reviews (1 per user per order/product)
 model Review {
