@@ -52,26 +52,48 @@ enum NotificationAudience {
   CUSTOMER
 }
 
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  PHONE_OTP
+}
 
 // Users
 model User {
-  id       String  @id @default(cuid())
-  name     String?
-  email    String  @unique
-  phone    String? @unique
-  password String?
-  role     Role    @default(CUSTOMER)
+  id         String  @id @default(cuid())
+  name       String?
+  email      String  @unique
+  phone      String? @unique
+  password   String?
+  role       Role    @default(CUSTOMER)
+  isVerified Boolean @default(false)
 
-  carts     Cart[]
-  orders    Order[]
-  addresses UserAddress[]
-  reviews   Review[]
-  questions Question[]
+  carts         Cart[]
+  orders        Order[]
+  addresses     UserAddress[]
+  reviews       Review[]
+  questions     Question[]
   notifications Notification[]
-
+  tokens        AuthToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Tokens (for email verification, password reset, phone OTP)
+model AuthToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  type      TokenType
+  expiresAt DateTime
+  used      Boolean   @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // Categories + Subcategories
@@ -154,7 +176,7 @@ model CartItem {
   cartId    String
   productId String? // null if variant used
   variantId String? // null if product has no variants
-  quantity  Int 
+  quantity  Int
 
   cart    Cart            @relation(fields: [cartId], references: [id])
   product Product?        @relation(fields: [productId], references: [id])
@@ -210,10 +232,10 @@ model OrderAddress {
   phone        String
   addressLine1 String
   addressLine2 String?
-  city         String @default("Kolkata")
-  state        String @default("West Bengal")
+  city         String  @default("Kolkata")
+  state        String  @default("West Bengal")
   postalCode   String
-  country      String @default("India")
+  country      String  @default("India")
 
   order Order @relation(fields: [orderId], references: [id])
 }
@@ -238,23 +260,22 @@ model UserAddress {
 
 // Notifications
 model Notification {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId    String?  // null for admin-wide notifications
-  user      User?    @relation(fields: [userId], references: [id])
+  userId String? // null for admin-wide notifications
+  user   User?   @relation(fields: [userId], references: [id])
 
-  audience  NotificationAudience
-  type      NotificationType
+  audience NotificationAudience
+  type     NotificationType
 
-  title     String
-  message   String
+  title   String
+  message String
 
-  entityId  String? // orderId, productId, questionId, etc.
-  isRead    Boolean @default(false)
+  entityId String? // orderId, productId, questionId, etc.
+  isRead   Boolean @default(false)
 
   createdAt DateTime @default(now())
 }
-
 
 // Reviews (1 per user per order/product)
 model Review {
