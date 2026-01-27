@@ -113,8 +113,8 @@ model Product {
   id          String  @id @default(cuid())
   name        String
   description String
-  price       Int // base price in paise
-  stock       Int // only used if no variants
+  price       Int? // base price in paise
+  stock       Int? // only used if no variants
   isActive    Boolean @default(true)
 
   categoryId String?
