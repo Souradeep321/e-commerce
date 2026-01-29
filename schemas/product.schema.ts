@@ -26,21 +26,19 @@ export const productSchema = z
     name: z.string().min(3).max(150),
     description: z.string().min(10),
 
-    categoryId: z.string().cuid("Invalid category"),
-
+    categoryId: z.string().cuid().optional(),
     gender: genderEnum.optional(),
 
-    price: z.number().int().positive().optional(),
-    stock: z.number().int().min(0).optional(),
+    price: z.number().int().positive().optional().nullable(),
+    stock: z.number().int().min(0).optional().nullable(),
 
-    variants: z.array(productVariantSchema).optional(),
-
-    images: z.array(productImageSchema).min(1, "At least one image required"),
+    // 👇 important
+    variants: z.array(productVariantSchema).default([]),
 
     isActive: z.boolean().default(true),
   })
   .superRefine((data, ctx) => {
-    const hasVariants = !!data.variants?.length;
+    const hasVariants = data.variants.length > 0;
     const hasBasePrice = typeof data.price === "number";
 
     if (!hasVariants && !hasBasePrice) {
@@ -59,6 +57,7 @@ export const productSchema = z
       });
     }
   });
+
 
 /* ---------------- TYPES ---------------- */
 
