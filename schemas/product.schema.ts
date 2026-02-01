@@ -58,8 +58,21 @@ export const productSchema = z
     }
   });
 
+export const updateProductSchema = z.object({
+  name: z.string().min(3).max(150).optional(),
+  description: z.string().min(10).optional(),
+  categoryId: z.string().cuid().optional(),
+  gender: genderEnum.optional(),
+  price: z.number().int().positive().nullable().optional(),
+  stock: z.number().int().min(0).nullable().optional(),
+  variants: z.array(productVariantSchema).optional(),
+  isActive: z.boolean().optional(),
+  // REMOVE images field entirely
+});
+
 
 /* ---------------- TYPES ---------------- */
 
 export type ProductInput = z.infer<typeof productSchema>;
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ProductVariantInput = z.infer<typeof productVariantSchema>;
