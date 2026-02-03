@@ -123,6 +123,10 @@ model Product {
 
   gender Gender?
 
+  minPrice          Int? // for filtering/sorting when variants exist
+  maxPrice          Int? // for filtering/sorting when variants exist
+  ourRecommendation Boolean @default(false) // highlighted products
+
   images     ProductImage[]
   variants   ProductVariant[]
   cartItems  CartItem[]
@@ -135,6 +139,7 @@ model Product {
 
   @@index([categoryId])
   @@index([isActive])
+  @@index([minPrice])
 }
 
 model ProductVariant {
