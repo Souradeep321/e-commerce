@@ -170,11 +170,16 @@ model Cart {
   userId String?
   user   User?   @relation(fields: [userId], references: [id])
 
+  sessionId String? @unique // 🔥 NEW: For guest cart tracking
+
   status CartStatus @default(ACTIVE)
   items  CartItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionId]) // 🔥 NEW: Index for performance
 }
 
 model CartItem {

@@ -2,6 +2,8 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
+import { mergeGuestCartWithUserCart } from "@/lib/cart-merge";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -63,6 +65,21 @@ export const authOptions: NextAuthOptions = {
                 session.user.role = token.role;
                 session.user.name = token.name;
                 session.user.email = token.email;
+
+                // 🔥 MERGE GUEST CART ON LOGIN
+                try {
+                    const cookieStore = await cookies();
+                    const sessionId = cookieStore.get("guest_session_id")?.value;
+
+                    if (sessionId && session.user.id) {
+                        await mergeGuestCartWithUserCart(session.user.id, sessionId);
+                        // Clear guest session cookie after merge
+                        cookieStore.delete("guest_session_id");
+                    }
+                } catch (error) {
+                    console.error("Cart merge on login failed:", error);
+                    // Don't block login if merge fails
+                }
             }
             return session;
         }
