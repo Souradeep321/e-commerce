@@ -107,10 +107,25 @@ export async function getActiveCart(userId?: string, sessionId?: string) {
       },
     });
 
-    if (!cart) {
+       if (!cart) {
       cart = await prisma.cart.create({
         data: { userId, status: "ACTIVE" },
-        include: { items: { include: { product: true, variant: true } } },
+        include: {
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  price: true,
+                  images: { take: 1, select: { url: true } },
+                },
+              },
+              variant: true,
+            },
+          },
+        },
       });
     }
 
@@ -140,7 +155,22 @@ export async function getActiveCart(userId?: string, sessionId?: string) {
     if (!cart) {
       cart = await prisma.cart.create({
         data: { sessionId, status: "ACTIVE" },
-        include: { items: { include: { product: true, variant: true } } },
+        include: {
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  price: true,
+                  images: { take: 1, select: { url: true } },
+                },
+              },
+              variant: true,
+            },
+          },
+        },
       });
     }
 
@@ -149,3 +179,4 @@ export async function getActiveCart(userId?: string, sessionId?: string) {
 
   return null;
 }
+
