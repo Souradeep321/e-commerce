@@ -220,38 +220,74 @@ export async function GET(req: Request) {
     // const { user, response } = await requireAdminAPI();
     // if (response) return response;
 
-    const products = await prisma.product.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        category: {
-          select: { id: true, name: true, slug: true },
-        },
-        images: {
-          take: 1,
-          select: { url: true },
-        },
-        variants: true,
-      },
-    });
+    const { searchParams } = new URL(req.url);
 
-    if (!products || products.length === 0) {
-      return NextResponse.json({
-        success: false,
-        message: "No products found",
-        products: [],
-      }, { status: 404 });
+    const page = Number(searchParams.get("page") || "1");
+    const limit = Number(searchParams.get("limit") || "10");
+    const category = searchParams.get("category") || undefined;
+    const gender = searchParams.get("gender") || undefined;
+    const sort = searchParams.get("sort") || "latest";
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      isActive: true,
+    };
+
+    if (category) {
+      where.category = {
+        slug: category,
+      };
     }
+
+    if (gender) {
+      where.gender = gender;
+    }
+
+    let orderBy: any = { createdAt: "desc" };
+
+    if (sort === "price_asc") orderBy = { minPrice: "asc" };
+    if (sort === "price_desc") orderBy = { maxPrice: "desc" };
+    if (sort === "latest") orderBy = { createdAt: "desc" };
+
+    const [products, total] = await Promise.all([
+          prisma.product.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy,
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              price: true,
+              minPrice: true,
+              maxPrice: true,
+              isActive: true,
+              images: {
+                take: 1, // thumbnail only
+                select: { url: true },
+              },
+              category: {
+                select: { name: true, slug: true },
+              },
+            },
+          }),
+          prisma.product.count({ where }),
+        ]);
 
     return NextResponse.json({
       success: true,
       message: "Products fetched successfully",
       products,
+      total,
     }, { status: 200 });
+
   } catch (err: any) {
     console.error("GET ADMIN PRODUCTS ERROR:", err);
     return NextResponse.json({
       success: false,
       message: err?.message || "Failed to fetch products",
-    }, { status: 400 });
+    }, { status: 500 });
   }
 }
