@@ -89,8 +89,8 @@ model AuthToken {
   expiresAt DateTime
   used      Boolean   @default(false)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When user deleted, remove their tokens
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -149,7 +149,8 @@ model ProductVariant {
   price     Int
   stock     Int
 
-  product    Product     @relation(fields: [productId], references: [id])
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When product deleted, remove its variants
   cartItems  CartItem[]
   orderItems OrderItem[]
 }
@@ -161,14 +162,16 @@ model ProductImage {
   publicId  String
   productId String
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When product deleted, remove its images
 }
 
 // Cart & Cart Items
 model Cart {
   id     String  @id @default(cuid())
   userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When user deleted, remove their cart
 
   sessionId String? @unique // 🔥 NEW: For guest cart tracking
 
@@ -189,9 +192,11 @@ model CartItem {
   variantId String? // null if product has no variants
   quantity  Int
 
-  cart    Cart            @relation(fields: [cartId], references: [id])
-  product Product?        @relation(fields: [productId], references: [id])
-  variant ProductVariant? @relation(fields: [variantId], references: [id])
+  cart    Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When cart deleted, remove all items in it
+  product Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  // ✅ CHANGED (cart gets Cascade, product/variant get SetNull)
 
   @@unique([cartId, productId, variantId])
 }
@@ -228,9 +233,11 @@ model OrderItem {
   price     Int // capture price at purchase time
   quantity  Int
 
-  order   Order           @relation(fields: [orderId], references: [id])
-  product Product         @relation(fields: [productId], references: [id])
-  variant ProductVariant? @relation(fields: [variantId], references: [id])
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When order deleted, remove all items in it
+  product Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  // ✅ CHANGED (order gets Cascade, product/variant get Restrict)
 }
 
 // Checkout / Order Address
@@ -248,7 +255,8 @@ model OrderAddress {
   postalCode   String
   country      String  @default("India")
 
-  order Order @relation(fields: [orderId], references: [id])
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When order deleted, remove its address
 }
 
 // User Saved Addresses
@@ -266,7 +274,8 @@ model UserAddress {
   country      String
   isDefault    Boolean @default(false)
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When user deleted, remove their saved addresses
 }
 
 // Notifications
@@ -274,7 +283,8 @@ model Notification {
   id String @id @default(cuid())
 
   userId String? // null for admin-wide notifications
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When user deleted, remove their notifications
 
   audience NotificationAudience
   type     NotificationType
@@ -315,6 +325,8 @@ model Question {
   createdAt  DateTime  @default(now())
   answeredAt DateTime?
 
-  user    User    @relation(fields: [userId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When user deleted, remove their questions
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // ✅ ADD - When product deleted, remove its questions
 }
