@@ -308,11 +308,26 @@ model Review {
   comment   String?
   createdAt DateTime @default(now())
 
+  images ReviewImage[]
+
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
   order   Order   @relation(fields: [orderId], references: [id])
 
   @@unique([userId, productId, orderId])
+}
+
+model ReviewImage {
+  id       String @id @default(cuid())
+  reviewId String
+  url      String
+  publicId String // For Cloudinary deletion
+  
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([reviewId])
 }
 
 // Questions (customer Q&A)
