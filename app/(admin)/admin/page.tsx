@@ -1,8 +1,10 @@
 import React from 'react'
+//  Admin dashboard
 
-export default function page() {
+const page = () => {
   return (
     <div>page</div>
   )
 }
-    
+
+export default page
