@@ -1,18 +1,11 @@
-// import React from 'react'
-// //Home page
-
-// const page = () => {
-//   return (
-//     <div>page</div>
-//   )
-// }
-
-// export default page
+import { HeroSection } from "@/components/HeroSection";
+// This is the main page of the application, which includes the HeroSection component.
 
 const page = () => {
   return (
     <main className="flex-1">
-      hello
+      {/* Hero Section */}
+      <HeroSection />
     </main>
   );
 }
