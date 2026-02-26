@@ -24,7 +24,7 @@ export default function LoginPage() {
           });
 
           if (res?.ok) {
-            router.push("/dashboard");
+            router.push("/admin");
           } else {
             console.log(res?.error); // CredentialsSignin
           }
