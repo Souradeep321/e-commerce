@@ -37,28 +37,22 @@ const footerLinks = [
 ]
 
 const SiteFooter: React.FC = () => {
-    const pathname = usePathname();
+  const pathname = usePathname();
 
   // Don't render the footer on the checkout page
   const excludedPaths = [
-    // '/checkout',
     '/cart',
+    '/checkout',  // ✅ Add this back
     '/account',
-    '/account/orders',
-    '/account/wishlist',
-    '/account/settings',
-    '/account/profile',
-    '/account/addresses',
-    '/account/questions',
-    '/account/reviews',
-    '/account/returns',
-    '/account/track-order',
     '/admin',
   ];
 
-  if (excludedPaths.some(path => pathname.startsWith(path))) {
-    return null;
-  }
+  const shouldShowFooter = !excludedPaths.some(path =>
+    pathname === path || pathname.startsWith(path + '/')
+  )
+
+  if (!shouldShowFooter) return null;
+
   return (
     <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">

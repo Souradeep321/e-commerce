@@ -2,12 +2,23 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Category } from '@/types/category'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Props {
     categories: Category[]
 }
 
 export function CategoryGrid({ categories }: Props) {
+    if (!categories || categories.length === 0) {
+        return (
+            <section className="mx-auto max-w-7xl px-4 py-12">
+                <p className="text-center text-gray-500">
+                    No categories available at the moment.
+                </p>
+            </section>
+        )
+    }
+
     return (
         <section
             id="categories"
@@ -61,4 +72,20 @@ export function CategoryGrid({ categories }: Props) {
             </div>
         </section>
     )
+}
+
+export function CategoryGridSkeleton() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-12">
+      <div className="mb-8">
+        <Skeleton className="h-4 w-16 mb-2" />
+        <Skeleton className="h-8 w-48" />
+      </div>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="aspect-3/4 rounded-2xl" />
+        ))}
+      </div>
+    </section>
+  )
 }
