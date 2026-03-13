@@ -35,9 +35,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" >
       <body
-        className="font-sans antialiased"
+        className={`${inter.variable} ${playfair.variable} font-sans antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>

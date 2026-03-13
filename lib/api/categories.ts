@@ -17,8 +17,9 @@
 // lib/api/categories.ts
 
 import { Category, CategoryResponse } from '@/types/category'
+import config from '@/lib/constants'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+const { API_URL } = config
 
 export async function getCategories(): Promise<Category[]> {
   try {

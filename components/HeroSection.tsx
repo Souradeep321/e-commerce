@@ -15,7 +15,7 @@ export function HeroSection() {
                 New Season Collection
               </span>
 
-              <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+              <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-5xl">
                 <span className="text-balance">
                   Elevate your everyday style
                 </span>
@@ -39,7 +39,8 @@ export function HeroSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full rounded-full border-gray-300 px-8 text-sm font-semibold text-gray-900 hover:bg-gray-100 sm:w-auto"
+                className="w-full rounded-full  px-8 text-sm font-semibold text-gray-900 hover:bg-[#e75723]
+                sm:w-auto  hover:text-white " 
               >
                 Explore Sale
               </Button>
