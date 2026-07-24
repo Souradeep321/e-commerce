@@ -1,10 +1,11 @@
 import * as z from "zod";
 
-export const usernameValidation = z
+export const nameValidation = z
     .string()
-    .min(3, "Username must be at least 3 characters long")
-    .max(30, "Username must be at most 30 characters long")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores");
+    .trim()
+    .min(2, "Name must be at least 2 characters long")
+    .max(50, "Name must be at most 50 characters long")
+    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces");
 
 export const passwordValidation = z
     .string()
@@ -16,7 +17,7 @@ export const passwordValidation = z
     .regex(/[\W_]/, "Password must contain at least one special character");
 
 export const registerSchema = z.object({
-    name: usernameValidation,
+    name: nameValidation,
     email: z.string().email({ message: "Invalid email address" }),
     phone: z.string().min(10).max(15).optional(),
     password: passwordValidation,
@@ -25,7 +26,7 @@ export const registerSchema = z.object({
 export type RegisterSchema = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
-    identifier: z.string().min(3, "Identifier must be at least 3 characters long"),
+    email: z.string().email({ message: "Invalid email address" }),
     password: z.string(),
 });
 
