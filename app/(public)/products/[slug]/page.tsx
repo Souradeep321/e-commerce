@@ -57,22 +57,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }
 
   return (
-    <>
-      <ProductDetail product={product} />
-      <section className="mx-auto sm:mx-10 xl:mx-20 max-w-7xl px-4 py-6 sm:py-10 lg:px-6  
+    <section className="mx-auto sm:mx-10 xl:mx-20 max-w-7xl px-4 py-6 sm:py-10 lg:px-6  
       ">
-        <Suspense fallback={<ProductGridSkeleton />}>
-          <ProductGrid
-            id='Similar Tshirts'
-            title='Similar Products'
-            subtitle='You might also like'
-            filter='latest'
-            limit={4}
-            viewAllHref={`/shop?category=${product.category.slug}&sort=latest`}
-            products={products} />
-        </Suspense>
+      <ProductDetail product={product} />
+      <Suspense fallback={<ProductGridSkeleton />}>
+        <ProductGrid
+          id='Similar Tshirts'
+          title='Similar Products'
+          subtitle='You might also like'
+          filter='latest'
+          limit={4}
+          viewAllHref={`/shop?category=${product.category.slug}&sort=latest`}
+          products={products} />
+      </Suspense>
 
-      </section>
-    </>
+    </section>
   )
 }

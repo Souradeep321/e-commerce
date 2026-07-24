@@ -57,8 +57,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   }
 
   return (
-    <section className="mx-auto sm:mx-10 xl:mx-20 max-w-7xl px-4 py-6 sm:py-10 lg:px-6  
-   ">
+    <>
       {/* Breadcrumb */}
       <nav
         className="mb-6 flex items-center gap-1.5 text-xs text-gray-600 sm:mb-8 sm:text-sm"
@@ -450,6 +449,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
           )}
         </div>
       </div>
-    </section>
+    </>
   )
 }

@@ -18,7 +18,7 @@ export async function getProducts(
   totalItems: number
   page: number
 }> {
-  try {
+  try { 
     const params = new URLSearchParams()
 
     if (filters.category) params.set('category', filters.category)

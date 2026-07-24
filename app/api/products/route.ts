@@ -55,6 +55,8 @@ export async function GET(req: Request) {
           minPrice: true,
           maxPrice: true,
           isActive: true,
+          gender: true,
+          rating: true,
           images: {
             take: 1, // thumbnail only
             select: { url: true },

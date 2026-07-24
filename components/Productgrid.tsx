@@ -4,7 +4,6 @@ import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { Product } from '@/types/product'
 import { ProductCard } from '@/components/ProductCard'
-import { fi } from 'zod/locales'
 
 interface ProductGridProps {
   title: string
