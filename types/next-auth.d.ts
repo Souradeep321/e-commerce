@@ -7,6 +7,7 @@ declare module "next-auth" {
       role: "ADMIN" | "CUSTOMER";
       name: string | null;
       email: string;
+      isVerified: boolean;
     } & DefaultSession["user"];
   }
 
@@ -15,6 +16,7 @@ declare module "next-auth" {
     role: "ADMIN" | "CUSTOMER";
     name: string | null;
     email: string;
+    isVerified: boolean;
   }
 }
 
@@ -24,5 +26,6 @@ declare module "next-auth/jwt" {
     role: "ADMIN" | "CUSTOMER";
     name: string | null;
     email: string;
+    isVerified: boolean;
   }
 }

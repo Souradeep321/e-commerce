@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import Razorpay from "razorpay";
+import { orderAddressSchema } from "@/schemas/order.schema";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -18,12 +19,15 @@ export async function POST(req: Request) {
   try {
     // ✅ FIXED: Using helper function
     const { user, response } = await requireAuthAPI();
-    
-    if (response) {
-      return response; // Unauthorized
+    if (response) return response; // Unauthorized
+
+    if (!user!.isVerified) {
+      return NextResponse.json(
+        { success: false, message: "Please verify your email before checkout", requiresVerification: true },
+        { status: 403 }
+      );
     }
 
-    const { addressId } = await req.json();
 
     // Get user's active cart
     const cart = await prisma.cart.findFirst({
@@ -66,7 +70,7 @@ export async function POST(req: Request) {
 
       // Check stock
       const availableStock = item.variant?.stock ?? item.product.stock ?? 0;
-      
+
       if (item.quantity > availableStock) {
         stockErrors.push(
           `${item.product.name}${item.variant ? ` (${item.variant.size})` : ""}: ` +
@@ -90,45 +94,46 @@ export async function POST(req: Request) {
     const totalAmount = cart.items.reduce((sum, item) => {
       // ✅ FIXED: Null check for product
       if (!item.product) return sum;
-      
+
       const itemPrice = item.variant?.price ?? item.product.price ?? 0;
       return sum + itemPrice * item.quantity;
     }, 0);
 
     // Get address
-    let address;
+    const { addressId, newAddress } = await req.json();
+
+    let addressData;
+
     if (addressId) {
-      address = await prisma.userAddress.findFirst({
-        where: {
-          id: addressId,
-          userId: user!.id,
-        },
+      // existing saved address, as before
+      const savedAddress = await prisma.userAddress.findFirst({
+        where: { id: addressId, userId: user!.id },
       });
-
-      if (!address) {
-        return NextResponse.json(
-          { success: false, message: "Address not found" },
-          { status: 404 }
-        );
+      if (!savedAddress) {
+        return NextResponse.json({ success: false, message: "Address not found" }, { status: 404 });
       }
-    } else {
-      // Get default address
-      address = await prisma.userAddress.findFirst({
-        where: {
-          userId: user!.id,
-          isDefault: true,
-        },
-      });
+      addressData = savedAddress;
 
-      if (!address) {
+    } else if (newAddress) {
+      // user typed a one-time address right at checkout — validate it
+      const parsed = orderAddressSchema.safeParse(newAddress);
+      if (!parsed.success) {
+        return NextResponse.json({ success: false, message: "Invalid address" }, { status: 400 });
+      }
+      addressData = parsed.data;
+
+    } else {
+      // fallback to default saved address
+      const defaultAddress = await prisma.userAddress.findFirst({
+        where: { userId: user!.id, isDefault: true },
+      });
+      if (!defaultAddress) {
         return NextResponse.json(
-          {
-            success: false,
-            message: "No delivery address found. Please add an address.",
-          },
+          { success: false, message: "Please provide a delivery address" },
           { status: 400 }
         );
       }
+      addressData = defaultAddress;
     }
 
     // ✅ FIXED: Razorpay amount (already in paise, so no conversion needed)
@@ -160,14 +165,14 @@ export async function POST(req: Request) {
         },
         address: {
           create: {
-            fullName: address.fullName,
-            phone: address.phone,
-            addressLine1: address.addressLine1,
-            addressLine2: address.addressLine2,
-            city: address.city,
-            state: address.state,
-            postalCode: address.postalCode,
-            country: address.country,
+            fullName: addressData.fullName,
+            phone: addressData.phone,
+            addressLine1: addressData.addressLine1,
+            addressLine2: addressData.addressLine2,
+            city: addressData.city,
+            state: addressData.state,
+            postalCode: addressData.postalCode,
+            country: addressData.country,
           },
         },
       },
@@ -214,7 +219,7 @@ export async function GET(req: Request) {
   try {
     // ✅ FIXED: Using helper function
     const { user, response } = await requireAuthAPI();
-    
+
     if (response) {
       return response; // Unauthorized
     }
@@ -266,7 +271,7 @@ export async function GET(req: Request) {
     // Calculate totals (with null checks)
     const subtotal = cart.items.reduce((sum, item) => {
       if (!item.product) return sum;
-      
+
       const itemPrice = item.variant?.price ?? item.product.price ?? 0;
       return sum + itemPrice * item.quantity;
     }, 0);

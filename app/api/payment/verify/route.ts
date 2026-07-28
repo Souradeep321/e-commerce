@@ -7,20 +7,19 @@ import { requireAuthAPI } from "@/lib/auth";
 import crypto from "crypto";
 
 export async function POST(req: Request) {
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    orderId,
+  } = await req.json();
   try {
     // ✅ FIXED: Using helper function
     const { user, response } = await requireAuthAPI();
-    
+
     if (response) {
       return response; // Unauthorized
     }
-
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      orderId,
-    } = await req.json();
 
     // ========================================
     // VERIFY RAZORPAY SIGNATURE
@@ -59,6 +58,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (order.razorpayOrderId !== razorpay_order_id) {
+      return NextResponse.json(
+        { success: false, message: "Order mismatch" },
+        { status: 400 }
+      );
+    }
+
     // ========================================
     // VERIFY OWNERSHIP
     // ========================================
@@ -82,7 +88,7 @@ export async function POST(req: Request) {
       }
 
       const currentStock = item.variant?.stock ?? item.product.stock ?? 0;
-      
+
       if (item.quantity > currentStock) {
         stockErrors.push(
           `${item.product.name}${item.variant ? ` (${item.variant.size})` : ""}: ` +
@@ -182,20 +188,15 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("PAYMENT VERIFICATION ERROR:", error);
 
-    // Try to mark order as failed if something goes wrong
-    try {
-      const body = await req.json();
-      const { orderId } = body;
-      
-      if (orderId) {
+    if (orderId) {
+      try {
         await prisma.order.update({
           where: { id: orderId },
           data: { status: "FAILED" },
         });
+      } catch (e) {
+        console.error("Failed to mark order as failed:", e);
       }
-    } catch (e) {
-      // Ignore errors during error handling
-      console.error("Failed to mark order as failed:", e);
     }
 
     return NextResponse.json(

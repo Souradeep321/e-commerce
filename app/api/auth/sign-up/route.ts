@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { registerSchema } from "@/schemas";
+import {createVerificationToken} from "@/lib/verification-token";
+import { sendVerificationEmail } from "@/lib/resend";
 
 export async function POST(req: Request) {
     try {
@@ -39,9 +41,13 @@ export async function POST(req: Request) {
             },
         });
 
+
+        const verificationToken = await createVerificationToken(newUser.id);
+        await sendVerificationEmail(newUser.email,String(newUser.name) , verificationToken);
+
         return NextResponse.json({
             success: true,
-            message: "User registered successfully",
+            message: "User registered successfully and verification email sent",
             user: {
                 id: newUser.id,
                 name: newUser.name,
