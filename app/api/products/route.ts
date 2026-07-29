@@ -36,9 +36,9 @@ export async function GET(req: Request) {
     // Use maxPrice for descending (shows most expensive option first)
     let orderBy: any = { createdAt: "desc" };
 
-    if (sort === "price_asc")  orderBy = { minPrice: "asc" };
+    if (sort === "price_asc") orderBy = { minPrice: "asc" };
     if (sort === "price_desc") orderBy = { maxPrice: "desc" };
-    if (sort === "latest")     orderBy = { createdAt: "desc" };
+    if (sort === "latest") orderBy = { createdAt: "desc" };
 
     // ---------- Query ----------
     const [products, total] = await Promise.all([
@@ -56,9 +56,11 @@ export async function GET(req: Request) {
           maxPrice: true,
           isActive: true,
           gender: true,
-          rating: true,
+          reviews: {     // TODO: Add cached averageRating column later, when we have a lot of products
+            select: { rating: true },
+          },
           images: {
-            take: 1, // thumbnail only
+            take: 1,
             select: { url: true },
           },
           category: {
@@ -69,6 +71,19 @@ export async function GET(req: Request) {
       prisma.product.count({ where }),
     ]);
 
+    // Compute average rating, drop raw reviews array
+    const enhancedProducts = products.map(({ reviews, ...product }) => {
+      const averageRating = reviews.length > 0
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        : 0;
+
+      return {
+        ...product,
+        rating: Number(averageRating.toFixed(1)),
+        reviewCount: reviews.length,
+      };
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -76,7 +91,7 @@ export async function GET(req: Request) {
         page,
         totalPages: Math.ceil(total / limit),
         totalItems: total,
-        products,
+        products: enhancedProducts,   // ← use the enhanced version
       },
       { status: 200 }
     );
