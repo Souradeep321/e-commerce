@@ -149,49 +149,48 @@ export async function POST(req: Request) {
     });
 
     // Create order in database
-    const order = await prisma.order.create({
-      data: {
-        userId: user!.id,
-        totalAmount,
-        status: "PENDING",
-        razorpayOrderId: razorpayOrder.id,
-        items: {
-          create: cart.items.map((item) => ({
-            productId: item.productId!,
-            variantId: item.variantId,
-            price: item.variant?.price ?? item.product?.price ?? 0,
-            quantity: item.quantity,
-          })),
-        },
-        address: {
-          create: {
-            fullName: addressData.fullName,
-            phone: addressData.phone,
-            addressLine1: addressData.addressLine1,
-            addressLine2: addressData.addressLine2,
-            city: addressData.city,
-            state: addressData.state,
-            postalCode: addressData.postalCode,
-            country: addressData.country,
+    const order = await prisma.$transaction(async (tx) => {
+      const newOrder = await tx.order.create({
+        data: {
+          userId: user!.id,
+          totalAmount,
+          status: "PENDING",
+          razorpayOrderId: razorpayOrder.id,
+          items: {
+            create: cart.items.map((item) => ({
+              productId: item.productId!,
+              variantId: item.variantId,
+              price: item.variant?.price ?? item.product?.price ?? 0,
+              quantity: item.quantity,
+            })),
+          },
+          address: {
+            create: {
+              fullName: addressData.fullName,
+              phone: addressData.phone,
+              addressLine1: addressData.addressLine1,
+              addressLine2: addressData.addressLine2,
+              city: addressData.city,
+              state: addressData.state,
+              postalCode: addressData.postalCode,
+              country: addressData.country,
+            },
           },
         },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
+        include: {
+          items: { include: { product: true, variant: true } },
+          address: true,
         },
-        address: true,
-      },
+      });
+
+      await tx.cart.update({
+        where: { id: cart.id },
+        data: { status: "CONVERTED" },
+      });
+
+      return newOrder;
     });
 
-    // Mark cart as converted
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { status: "CONVERTED" },
-    });
 
     return NextResponse.json({
       success: true,
