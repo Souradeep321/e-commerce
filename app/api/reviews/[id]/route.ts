@@ -84,14 +84,6 @@ export async function PATCH(
           cloudinary.uploader.destroy(img.publicId).catch(() => null)
         )
       );
-
-      // Delete from database
-      await prisma.reviewImage.deleteMany({
-        where: {
-          id: { in: deleteImageIds },
-          reviewId: id,
-        },
-      });
     }
 
     // ✅ Upload new images to Cloudinary
@@ -133,27 +125,25 @@ export async function PATCH(
     }
 
     // ✅ Update review
-    const updatedReview = await prisma.review.update({
-      where: { id },
-      data: {
-        ...(rating && { rating }),
-        ...(comment !== null && { comment }),
-        ...(uploadedImages.length > 0 && {
-          images: {
-            create: uploadedImages,
-          },
-        }),
-      },
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
+    const updatedReview = await prisma.$transaction(async (tx) => {
+      if (deleteImageIds.length > 0) {
+        await tx.reviewImage.deleteMany({
+          where: { id: { in: deleteImageIds }, reviewId: id },
+        });
+      }
+
+      return tx.review.update({
+        where: { id },
+        data: {
+          ...(rating && { rating }),
+          ...(comment !== null && { comment }),
+          ...(uploadedImages.length > 0 && { images: { create: uploadedImages } }),
         },
-        images: true,
-      },
+        include: {
+          product: { select: { id: true, name: true, slug: true } },
+          images: true,
+        },
+      });
     });
 
     return NextResponse.json({
