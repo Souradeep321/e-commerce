@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
+import { cartItemSchema, cartSchema } from "@/schemas/cart.schema";
 
 // ============================================
 // HELPER: Get or create guest session ID
@@ -29,13 +30,22 @@ async function getGuestSessionId(): Promise<string> {
   return sessionId;
 }
 
+// FIXME: GET/POST/DELETE all duplicate the same "find or create active cart"
+// logic (auth vs guest branching). Refactor to use getActiveCart() from
+// lib/cart-merge.ts instead, so this logic lives in one place.
+/*
+const cart = session?.user?.id
+  ? await getActiveCart(session.user.id)
+  : await getActiveCart(undefined, await getGuestSessionId());
+*/  
+
 // ============================================
 // GET - Fetch cart (works for both)
 // ============================================
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     let cart;
 
     if (session?.user?.id) {
@@ -186,15 +196,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const { productId, variantId, quantity } = await req.json();
 
-    // Validation
-    if (!productId || quantity < 1) {
-      return NextResponse.json(
-        { success: false, message: "Invalid product or quantity" },
-        { status: 400 }
-      );
+    const body = await req.json();
+    const parsed = cartItemSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: "Invalid cart item" }, { status: 400 });
     }
+    const { productId, productVariantId: variantId, quantity } = parsed.data;
 
     // Verify product exists and is active
     const product = await prisma.product.findFirst({
@@ -274,7 +282,7 @@ export async function POST(req: Request) {
 
     if (existingItem) {
       const newQuantity = existingItem.quantity + quantity;
-      
+
       // Check if new quantity exceeds stock
       if (newQuantity > availableStock) {
         return NextResponse.json(
@@ -396,8 +404,8 @@ export async function PATCH(req: Request) {
       await prisma.cartItem.delete({ where: { id: itemId } });
     } else {
       // Check stock before updating
-      const availableStock = cartItem.variant?.stock || cartItem.product?.stock || 0;
-      
+      const availableStock = cartItem.variant?.stock ?? cartItem.product?.stock ?? 0;
+
       if (quantity > availableStock) {
         return NextResponse.json(
           {

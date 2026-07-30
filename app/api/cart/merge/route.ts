@@ -4,6 +4,19 @@ import { mergeGuestCartWithUserCart } from "@/lib/cart-merge";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+// FIXME: Call it once, right after successful login, on the client:
+/*
+const result = await signIn("credentials", {
+  email,
+  password,
+  redirect: false,
+});
+
+if (result?.ok) {
+  await fetch("/api/cart/merge", { method: "POST" });
+  router.push("/"); // or wherever you redirect after login
+}
+*/
 export async function POST(req: NextRequest) {
     try {
         const { user, response } = await requireAuthAPI();
