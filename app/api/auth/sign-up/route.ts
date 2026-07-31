@@ -2,11 +2,18 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { registerSchema } from "@/schemas";
-import {createVerificationToken} from "@/lib/verification-token";
+import { createVerificationToken } from "@/lib/verification-token";
 import { sendVerificationEmail } from "@/lib/resend";
+import { authRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit-helper";
 
 export async function POST(req: Request) {
     try {
+        const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+        const rateLimitResponse = await checkRateLimit(authRateLimit, `signup:${ip}`);
+        if (rateLimitResponse) return rateLimitResponse;
+
         const body = await req.json();
         const data = registerSchema.safeParse(body);
 
@@ -43,7 +50,7 @@ export async function POST(req: Request) {
 
 
         const verificationToken = await createVerificationToken(newUser.id);
-        await sendVerificationEmail(newUser.email,String(newUser.name) , verificationToken);
+        await sendVerificationEmail(newUser.email, String(newUser.name), verificationToken);
 
         return NextResponse.json({
             success: true,

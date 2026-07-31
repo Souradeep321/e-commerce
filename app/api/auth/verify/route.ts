@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verifyTokenSchema } from "@/schemas";
+import {authRateLimit} from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit-helper";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,6 +17,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { token, type } = parsed.data;
+
+     const rateLimitResponse = await checkRateLimit(authRateLimit, `verify-token:${token}`);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const authToken = await prisma.authToken.findUnique({
       where: { token },

@@ -2,9 +2,9 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
-import { mergeGuestCartWithUserCart } from "@/lib/cart-merge";
 import { loginSchema } from "@/schemas";
+import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { authRateLimit } from "@/lib/rate-limit";
 
 
 export const authOptions: NextAuthOptions = {
@@ -26,6 +26,9 @@ export const authOptions: NextAuthOptions = {
 
                     const { email, password } = parsed.data;
 
+                    const rateLimitResponse = await checkRateLimit(authRateLimit, `login:${email}`);
+                    if (rateLimitResponse) return null; // authorize() must return null, not a NextResponse
+
                     const user = await prisma.user.findUnique({
                         where: { email },
                     });
@@ -45,6 +48,7 @@ export const authOptions: NextAuthOptions = {
                         name: user.name,
                         email: user.email,
                         role: user.role,
+                        isVerified: user.isVerified,
                     };
                 } catch (error) {
                     console.error("Error in authorize function:", error);
@@ -54,13 +58,28 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger }) {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
                 token.name = user.name;
                 token.email = user.email;
+                token.isVerified = user.isVerified;
             }
+
+            // 🔥 Re-fetch fresh isVerified from DB when explicitly triggered
+            if (trigger === "update") {
+                const freshUser = await prisma.user.findUnique({
+                    where: { id: token.id as string },
+                    select: { isVerified: true },
+                });
+                if (freshUser) {
+                    token.isVerified = freshUser.isVerified;
+                }
+            }
+
+            // TODO: On your /verify-email page (client-side), call update() from useSession() right after the verify API call succeeds:
+
             return token;
         }, async session({ session, token }) {
             if (session.user) {
@@ -68,6 +87,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.role = token.role;
                 session.user.name = token.name;
                 session.user.email = token.email;
+                session.user.isVerified = token.isVerified;
             }
             return session;
         }
