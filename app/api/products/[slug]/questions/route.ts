@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { writeRateLimit } from "@/lib/rate-limit";
+import {checkRateLimit} from "@/lib/rate-limit-helper";
 
 // GET - Fetch all questions for a product
 export async function GET(
@@ -71,6 +73,9 @@ export async function POST(
   try {
     const { user, response } = await requireAuthAPI();
     if (response) return response;
+
+    const ratelimitResponse = await checkRateLimit(writeRateLimit, `ask-question:${user!.email}`);
+    if (ratelimitResponse) return ratelimitResponse;
 
     const { slug } = await params;
     const { question } = await req.json();

@@ -6,6 +6,8 @@ import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import Razorpay from "razorpay";
 import { orderAddressSchema } from "@/schemas/order.schema";
+import { writeRateLimit } from "@/lib/rate-limit";
+import {checkRateLimit} from "@/lib/rate-limit-helper";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -20,6 +22,9 @@ export async function POST(req: Request) {
     // ✅ FIXED: Using helper function
     const { user, response } = await requireAuthAPI();
     if (response) return response; // Unauthorized
+
+    const ratelimitResponse = await checkRateLimit(writeRateLimit, `checkout:${user!.email}`);
+    if (ratelimitResponse) return ratelimitResponse;
 
     if (!user!.isVerified) {
       return NextResponse.json(

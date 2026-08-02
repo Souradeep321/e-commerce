@@ -9,6 +9,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 import { cartItemSchema, cartSchema } from "@/schemas/cart.schema";
+import { writeRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit-helper";
 
 // ============================================
 // HELPER: Get or create guest session ID
@@ -37,7 +39,7 @@ async function getGuestSessionId(): Promise<string> {
 const cart = session?.user?.id
   ? await getActiveCart(session.user.id)
   : await getActiveCart(undefined, await getGuestSessionId());
-*/  
+*/
 
 // ============================================
 // GET - Fetch cart (works for both)
@@ -197,8 +199,17 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
+    // Determine rate-limit identifier based on auth status
+    const identifier = session?.user?.id
+      ? `add-to-cart:${session.user.id}`
+      : `add-to-cart:${await getGuestSessionId()}`;
+
+    const rateLimitResponse = await checkRateLimit(writeRateLimit, identifier);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await req.json();
     const parsed = cartItemSchema.safeParse(body);
+
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: "Invalid cart item" }, { status: 400 });
     }
@@ -352,6 +363,15 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const session = await getServerSession(authOptions);
+
+    const identifier = session?.user?.id
+      ? `update-cart:${session.user.id}`
+      : `update-cart:${await getGuestSessionId()}`;
+
+    const rateLimitResponse = await checkRateLimit(writeRateLimit, identifier);
+    if (rateLimitResponse) return rateLimitResponse;
+
+
     const { itemId, quantity } = await req.json();
 
     // Validation
@@ -464,6 +484,14 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const session = await getServerSession(authOptions);
+
+    const identifier = session?.user?.id
+      ? `clear-cart:${session.user.id}`
+      : `clear-cart:${await getGuestSessionId()}`;
+
+    const rateLimitResponse = await checkRateLimit(writeRateLimit, identifier);
+    if (rateLimitResponse) return rateLimitResponse;
+
 
     let cart;
 

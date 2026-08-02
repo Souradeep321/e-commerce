@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
+import { writeRateLimit } from "@/lib/rate-limit";
+import {checkRateLimit} from "@/lib/rate-limit-helper";
 
 // GET - Fetch all reviews for a product with pagination
 export async function GET(
@@ -102,6 +104,9 @@ export async function POST(
   try {
     const { user, response } = await requireAuthAPI();
     if (response) return response;
+
+    const ratelimitResponse = await checkRateLimit(writeRateLimit, `create-review:${user!.email}`);
+    if (ratelimitResponse) return ratelimitResponse;
 
     const { slug } = await params;
 
