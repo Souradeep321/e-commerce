@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import { writeRateLimit } from "@/lib/rate-limit";
 import {checkRateLimit} from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch all questions for a product
 export async function GET(
@@ -57,11 +58,8 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    console.error("GET QUESTIONS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/products/[slug]/questions:", error);
+    return handleApiError(error, "GET /api/products/[slug]/questions");
   }
 }
 
@@ -141,10 +139,7 @@ export async function POST(
       question: newQuestion,
     }, { status: 201 });
   } catch (error: any) {
-    console.error("CREATE QUESTION ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("CREATE QUESTION ERROR in POST /api/products/[slug]/questions:", error);
+    return handleApiError(error, "CREATE QUESTION");
   }
 }

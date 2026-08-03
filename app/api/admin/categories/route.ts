@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import slugify from "slugify";
 import { categorySchema } from "@/schemas/category.schema";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: Request) {
     try {
@@ -66,10 +67,8 @@ export async function POST(req: Request) {
             category
         }, { status: 201 });
     } catch (error: any) {
-        return NextResponse.json(
-            { success: false, message: error?.message || "Failed to create category" },
-            { status: 400 }
-        );
+        console.error("Error in POST /api/admin/categories:", error);
+        return handleApiError(error, "CREATE CATEGORY");
     }
 }
 
@@ -90,9 +89,7 @@ export async function GET(req: Request) {
             categories,
         }, { status: 200 });
     } catch (error: any) {
-        return NextResponse.json(
-            { success: false, message: error?.message || "Failed to fetch categories" },
-            { status: 400 }
-        );
+        console.error("Error in GET /api/admin/categories:", error);
+        return handleApiError(error, "FETCH CATEGORIES");
     }
 }

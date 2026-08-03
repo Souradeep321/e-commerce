@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI, requireAdminAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch user notifications
 export async function GET(req: Request) {
@@ -60,11 +61,8 @@ export async function GET(req: Request) {
       notifications,
     });
   } catch (error: any) {
-    console.error("GET NOTIFICATIONS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/notifications:", error);
+    return handleApiError(error, "FETCH NOTIFICATIONS");
   }
 }
 
@@ -95,10 +93,7 @@ export async function DELETE(req: Request) {
       deletedCount: result.count,
     });
   } catch (error: any) {
-    console.error("CLEAR NOTIFICATIONS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in DELETE /api/notifications:", error);
+    return handleApiError(error, "CLEAR NOTIFICATIONS");
   }
 }

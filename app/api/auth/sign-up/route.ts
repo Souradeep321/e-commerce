@@ -6,6 +6,7 @@ import { createVerificationToken } from "@/lib/verification-token";
 import { sendVerificationEmail } from "@/lib/resend";
 import { authRateLimit } from "@/lib/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: Request) {
     try {
@@ -50,6 +51,14 @@ export async function POST(req: Request) {
 
 
         const verificationToken = await createVerificationToken(newUser.id);
+
+        if (!verificationToken) {
+            return NextResponse.json({
+                success: false,
+                message: "Failed to create verification token",
+            }, { status: 500 });
+        }
+        
         await sendVerificationEmail(newUser.email, String(newUser.name), verificationToken);
 
         return NextResponse.json({
@@ -62,10 +71,7 @@ export async function POST(req: Request) {
             },
         }, { status: 201 });
     } catch (error) {
-        console.error("Registration error:", error);
-        return NextResponse.json({
-            success: false,
-            message: "Internal server error",
-        }, { status: 500 });
+        console.error("Error in POST /api/auth/sign-up:", error);
+        return handleApiError(error, "SIGN UP");
     }
 }

@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - User's order history
 export async function GET(req: Request) {
@@ -51,10 +52,7 @@ export async function GET(req: Request) {
             orders,
         });
     } catch (error) {
-        console.error("GET USER ORDERS ERROR:", error);
-        return NextResponse.json(
-            { success: false, message: "Failed to fetch orders" },
-            { status: 500 }
-        );
+        console.error("Error in GET /api/orders:", error);
+        return handleApiError(error, "FETCH ORDERS");
     }
 }

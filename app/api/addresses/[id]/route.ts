@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import { addressSchema } from "@/schemas";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Update address
 export async function PATCH(
@@ -68,11 +69,8 @@ export async function PATCH(
       address,
     });
   } catch (error: any) {
-    console.error("UPDATE ADDRESS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in PATCH /api/addresses/[id]:", error);
+    return handleApiError(error, "UPDATE ADDRESS");
   }
 }
 
@@ -126,10 +124,7 @@ export async function DELETE(
       message: "Address deleted successfully",
     });
   } catch (error: any) {
-    console.error("DELETE ADDRESS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in DELETE /api/addresses/[id]:", error);
+    return handleApiError(error, "DELETE ADDRESS");
   }
 }

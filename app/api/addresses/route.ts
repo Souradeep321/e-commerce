@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import { addressSchema } from "@/schemas";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch all user addresses
 export async function GET(req: Request) {
@@ -21,11 +22,8 @@ export async function GET(req: Request) {
       addresses,
     });
   } catch (error: any) {
-    console.error("GET ADDRESSES ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+   console.error("Error in GET /api/addresses:", error);
+   return handleApiError(error, "FETCH ADDRESSES");
   }
 }
 
@@ -36,7 +34,7 @@ export async function POST(req: Request) {
     if (response) return response;
 
     const body = await req.json();
-    
+
     // Validate using Zod
     const validated = addressSchema.parse(body);
 
@@ -73,10 +71,7 @@ export async function POST(req: Request) {
       address,
     }, { status: 201 });
   } catch (error: any) {
-    console.error("CREATE ADDRESS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in POST /api/addresses:", error);
+    return handleApiError(error, "CREATE ADDRESS");
   }
 }

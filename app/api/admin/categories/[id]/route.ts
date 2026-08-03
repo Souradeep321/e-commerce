@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function DELETE(
     req: Request,
@@ -54,9 +55,7 @@ export async function DELETE(
             message: "Category deleted successfully",
         }, { status: 200 });
     } catch (error: any) {
-        return NextResponse.json(
-            { success: false, message: error.message },
-            { status: 400 }
-        );
+        console.error("Error in DELETE /api/admin/categories/[id]:", error);
+        return handleApiError(error, "DELETE CATEGORY");
     }
 }

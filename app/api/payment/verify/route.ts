@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import crypto from "crypto";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: Request) {
   const {
@@ -186,7 +187,7 @@ export async function POST(req: Request) {
       orderId,
     });
   } catch (error) {
-    console.error("PAYMENT VERIFICATION ERROR:", error);
+    console.error("PAYMENT VERIFICATION ERROR in POST /api/payment/verify:", error);
 
     if (orderId) {
       try {
@@ -199,9 +200,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json(
-      { success: false, message: "Payment verification failed" },
-      { status: 500 }
-    );
+        return handleApiError(error, "PAYMENT VERIFICATION");
+
   }
 }

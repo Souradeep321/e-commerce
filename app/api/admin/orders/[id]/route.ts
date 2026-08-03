@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdminAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Single order details (ADMIN)
 export async function GET(
@@ -61,11 +62,8 @@ export async function GET(
       order,
     });
   } catch (error) {
-    console.error("GET ORDER ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch order" },
-      { status: 500 }
-    );
+    console.error("Error in GET /api/admin/orders/[id]:", error);
+    return handleApiError(error, "FETCH ORDER");
   }
 }
 
@@ -135,11 +133,8 @@ export async function PATCH(
       order: updatedOrder,
     });
   } catch (error) {
-    console.error("UPDATE ORDER ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to update order" },
-      { status: 500 }
-    );
+    console.error("Error in PATCH /api/admin/orders/[id]:", error);
+    return handleApiError(error, "UPDATE ORDER STATUS");
   }
 }
 
@@ -212,10 +207,7 @@ export async function DELETE(
       },
     });
   } catch (error: any) {
-    console.error("DELETE ORDER ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in DELETE /api/admin/orders/[id]:", error);
+    return handleApiError(error, "DELETE ORDER");
   }
 }

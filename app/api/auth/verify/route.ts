@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { verifyTokenSchema } from "@/schemas";
 import { authRateLimit } from "@/lib/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,10 +62,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, message: "Email verified successfully" });
   } catch (error) {
-    console.error("VERIFY TOKEN ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Something went wrong" },
-      { status: 500 }
-    );
+    console.error("Error in POST /api/auth/verify:", error);
+    return handleApiError(error, "VERIFY TOKEN");
   }
 }

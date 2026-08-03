@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function GET(
   req: Request,
@@ -84,10 +85,7 @@ export async function GET(
       availableOrders: unreviewedOrders,
     });
   } catch (error: any) {
-    console.error("CAN REVIEW CHECK ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/products/[slug]/can-review:", error);
+    return handleApiError(error, "GET /api/products/[slug]/can-review");
   }
 }

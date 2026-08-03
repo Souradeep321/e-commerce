@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Update own review
 export async function PATCH(
@@ -152,7 +153,7 @@ export async function PATCH(
       review: updatedReview,
     });
   } catch (error: any) {
-    console.error("UPDATE REVIEW ERROR:", error);
+    console.error("Error in PATCH /api/reviews/[id]:", error);
 
     // ✅ Rollback: Delete newly uploaded images
     if (uploadedPublicIds.length) {
@@ -163,10 +164,7 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    return handleApiError(error, "PATCH /api/reviews/[id]");
   }
 }
 
@@ -223,10 +221,7 @@ export async function DELETE(
       message: "Review deleted successfully",
     });
   } catch (error: any) {
-    console.error("DELETE REVIEW ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in DELETE /api/reviews/[id]:", error);
+    return handleApiError(error, "DELETE /api/reviews/[id]");
   }
 }

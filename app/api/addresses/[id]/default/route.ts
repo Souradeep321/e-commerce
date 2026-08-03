@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Set address as default
 export async function PATCH(
@@ -50,10 +51,7 @@ export async function PATCH(
       address: updatedAddress,
     });
   } catch (error: any) {
-    console.error("SET DEFAULT ADDRESS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in PATCH /api/addresses/[id]/default:", error);
+    return handleApiError(error, "SET DEFAULT ADDRESS");
   }
 }

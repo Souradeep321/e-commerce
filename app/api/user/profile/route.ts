@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import bcrypt from "bcryptjs";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Get user profile
 export async function GET(req: Request) {
@@ -37,11 +38,8 @@ export async function GET(req: Request) {
       profile,
     });
   } catch (error: any) {
-    console.error("GET PROFILE ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/user/profile:", error);
+    return handleApiError(error, "GET /api/user/profile");
   }
 }
 
@@ -146,10 +144,7 @@ export async function PATCH(req: Request) {
       profile: updatedUser,
     });
   } catch (error: any) {
-    console.error("UPDATE PROFILE ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in PATCH /api/user/profile:", error);
+    return handleApiError(error, "PATCH /api/user/profile");
   }
 }

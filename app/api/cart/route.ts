@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import { cartItemSchema, cartSchema } from "@/schemas/cart.schema";
 import { writeRateLimit } from "@/lib/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // ============================================
 // HELPER: Get or create guest session ID
@@ -184,11 +185,8 @@ export async function GET(req: Request) {
       },
     });
   } catch (error) {
-    console.error("GET CART ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch cart" },
-      { status: 500 }
-    );
+    console.error("Error in GET /api/cart:", error);
+    return handleApiError(error, "GET CART");
   }
 }
 
@@ -349,11 +347,8 @@ export async function POST(req: Request) {
       cart: updatedCart,
     });
   } catch (error) {
-    console.error("ADD TO CART ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to add item to cart" },
-      { status: 500 }
-    );
+    console.error("Error in POST /api/cart:", error);
+    return handleApiError(error, "ADD TO CART");
   }
 }
 
@@ -470,11 +465,8 @@ export async function PATCH(req: Request) {
       cart: updatedCart,
     });
   } catch (error) {
-    console.error("UPDATE CART ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to update cart" },
-      { status: 500 }
-    );
+    console.error("Error in PATCH /api/cart:", error);
+    return handleApiError(error, "UPDATE CART");
   }
 }
 
@@ -525,10 +517,7 @@ export async function DELETE(req: Request) {
       message: "Cart cleared successfully",
     });
   } catch (error) {
-    console.error("CLEAR CART ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to clear cart" },
-      { status: 500 }
-    );
+    console.error("Error in DELETE /api/cart:", error);
+    return handleApiError(error, "CLEAR CART");
   }
 }

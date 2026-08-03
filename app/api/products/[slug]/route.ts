@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function GET(
   req: Request,
@@ -46,11 +47,8 @@ export async function GET(
       product,
     }, { status: 200 });
   } catch (error) {
-    console.error("GET PRODUCT ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch product" },
-      { status: 500 }
-    );
+    console.error("Error in GET /api/products/[slug]:", error);
+    return handleApiError(error, "GET PRODUCT");
   }
 }
 

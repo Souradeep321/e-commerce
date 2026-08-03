@@ -7,7 +7,8 @@ import { requireAuthAPI } from "@/lib/auth";
 import Razorpay from "razorpay";
 import { orderAddressSchema } from "@/schemas/order.schema";
 import { writeRateLimit } from "@/lib/rate-limit";
-import {checkRateLimit} from "@/lib/rate-limit-helper";
+import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -208,11 +209,8 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error("CHECKOUT ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Checkout failed" },
-      { status: 500 }
-    );
+    console.error("Error in POST /api/checkout:", error);
+    return handleApiError(error, "CHECKOUT");
   }
 }
 
@@ -303,10 +301,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (error) {
-    console.error("GET CHECKOUT ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch checkout details" },
-      { status: 500 }
-    );
+    console.error("Error in GET /api/checkout:", error);
+    return handleApiError(error, "FETCH CHECKOUT DETAILS");
   }
 }

@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch user's own reviews
 export async function GET(req: Request) {
@@ -55,10 +56,7 @@ export async function GET(req: Request) {
       reviews,
     }, { status: 200 });
   } catch (error: any) {
-    console.error("GET USER REVIEWS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/reviews:", error);
+    return handleApiError(error, "GET /api/reviews");
   }
 }

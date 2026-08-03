@@ -7,6 +7,7 @@ import { requireAdminAPI } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { productSchema } from "@/schemas";
 import slugify from "slugify";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: Request) {
   const uploadedPublicIds: string[] = [];
@@ -190,8 +191,6 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (err: any) {
-    console.error("POST ADMIN PRODUCT ERROR:", err);
-
     /* 🔥 Rollback Cloudinary uploads */
     if (uploadedPublicIds.length) {
       await Promise.all(
@@ -201,13 +200,9 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json(
-      {
-        success: false,
-        message: err?.message || "Product creation failed",
-      },
-      { status: 400 }
-    );
+    console.error("Error in POST /api/admin/products:", err);
+    return handleApiError(err, "CREATE PRODUCT");
+    
   }
 }
 
@@ -284,10 +279,7 @@ export async function GET(req: Request) {
     }, { status: 200 });
 
   } catch (err: any) {
-    console.error("GET ADMIN PRODUCTS ERROR:", err);
-    return NextResponse.json({
-      success: false,
-      message: err?.message || "Failed to fetch products",
-    }, { status: 500 });
+    console.error("Error in GET /api/admin/products:", err);
+    return handleApiError(err, "FETCH PRODUCTS");
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdminAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function GET(req: Request) {
     try {
@@ -65,10 +66,7 @@ export async function GET(req: Request) {
             orders,
         });
     } catch (error) {
-        console.error("GET ADMIN ORDERS ERROR:", error);
-        return NextResponse.json(
-            { success: false, message: "Failed to fetch orders" },
-            { status: 500 }
-        );
+        console.error("Error in GET /api/admin/orders:", error);
+        return handleApiError(error, "FETCH ADMIN ORDERS");
     }
 }

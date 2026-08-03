@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { updateProductSchema } from "@/schemas";
 import slugify from "slugify";
+import { handleApiError } from "@/lib/api-error-handler";
 
 //  GET   /api/admin/products/[id]      → get single product (edit page)
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
@@ -31,11 +32,8 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
       product
     }, { status: 200 });
   } catch (error) {
-    console.error("GET ADMIN PRODUCT ERROR:", error);
-    return NextResponse.json({
-      success: false,
-      message: "Failed to fetch product"
-    }, { status: 500 });
+    console.error("Error in GET /api/admin/products/[id]:", error);
+    return handleApiError(error, "FETCH ADMIN PRODUCT");
   }
 }
 
@@ -225,33 +223,8 @@ export async function PATCH(
       { status: 200 }
     );
   } catch (error) {
-    console.error("PATCH PRODUCT ERROR:", error);
-
-    if ((error as any)?.code === "P2025") {
-      return NextResponse.json(
-        { success: false, message: "Product not found" },
-        { status: 404 }
-      );
-    }
-
-    if ((error as any)?.code === "P2002") {
-      return NextResponse.json(
-        { success: false, message: "Product with this name already exists" },
-        { status: 409 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to update product",
-        error:
-          process.env.NODE_ENV === "development"
-            ? (error as any)?.message
-            : undefined,
-      },
-      { status: 500 }
-    );
+    console.error("Error in PATCH /api/admin/products/[id]:", error);
+    return handleApiError(error, "PATCH PRODUCT");
   }
 }
 
@@ -306,11 +279,8 @@ export async function DELETE(
     return NextResponse.json({ success: true, message: "Product deleted successfully" }, { status: 200 });
 
   } catch (error) {
-    console.error("DELETE PRODUCT ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to delete product" },
-      { status: 500 }
-    );
+    console.error("Error in DELETE /api/admin/products/[id]:", error);
+    return handleApiError(error, "DELETE PRODUCT");
   }
 }
 

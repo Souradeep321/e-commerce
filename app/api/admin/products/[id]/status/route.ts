@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api-error-handler";
 
 
 // Status   /api/admin/products/[id]/status     → change product status
@@ -38,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             }
         }, { status: 200 });
     } catch (error) {
-        console.error("PATCH ADMIN PRODUCT ERROR:", error);
-        return NextResponse.json({ success: false, message: "Failed to change product status" }, { status: 500 });
+        console.error("Error in PATCH /api/admin/products/[id]/status:", error);
+        return handleApiError(error, "CHANGE PRODUCT STATUS");
     }
 }

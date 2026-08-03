@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdminAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch all questions (admin)
 export async function GET(req: Request) {
@@ -63,10 +64,7 @@ export async function GET(req: Request) {
       questions,
     });
   } catch (error: any) {
-    console.error("GET ADMIN QUESTIONS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/admin/questions:", error);
+    return handleApiError(error, "FETCH ADMIN QUESTIONS");
   }
 }

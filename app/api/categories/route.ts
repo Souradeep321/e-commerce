@@ -1,3 +1,4 @@
+import { handleApiError } from "@/lib/api-error-handler";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -14,6 +15,7 @@ export async function GET(req: Request) {
             categories
         }, { status: 200 });
     } catch (error: any) {
-        return NextResponse.json({ success: false, message: error.message }, { status: 400 });
+        console.error("Error in GET /api/categories:", error);
+        return handleApiError(error, "FETCH CATEGORIES");
     }
 }

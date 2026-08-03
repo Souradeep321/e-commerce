@@ -6,7 +6,8 @@ import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { writeRateLimit } from "@/lib/rate-limit";
-import {checkRateLimit} from "@/lib/rate-limit-helper";
+import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch all reviews for a product with pagination
 export async function GET(
@@ -86,11 +87,8 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    console.error("GET REVIEWS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/products/[slug]/reviews:", error);
+    return handleApiError(error, "GET REVIEWS");
   }
 }
 
@@ -202,7 +200,7 @@ export async function POST(
         const uploadResult: any = await new Promise((resolve, reject) => {
           cloudinary.uploader
             .upload_stream(
-              { 
+              {
                 folder: "reviews",
                 transformation: [
                   { width: 800, height: 800, crop: "limit" },
@@ -263,7 +261,7 @@ export async function POST(
       review,
     }, { status: 201 });
   } catch (error: any) {
-    console.error("CREATE REVIEW ERROR:", error);
+    console.error("Error in POST /api/products/[slug]/reviews:", error);
 
     // Rollback: Delete uploaded images
     if (uploadedPublicIds.length) {
@@ -273,10 +271,6 @@ export async function POST(
         )
       );
     }
-
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    return handleApiError(error, "CREATE REVIEW");
   }
 }

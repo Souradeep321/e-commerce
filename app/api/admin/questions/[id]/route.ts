@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdminAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Answer a question (admin)
 export async function PATCH(
@@ -85,11 +86,8 @@ export async function PATCH(
             question: updatedQuestion,
         });
     } catch (error: any) {
-        console.error("ANSWER QUESTION ERROR:", error);
-        return NextResponse.json(
-            { success: false, message: error.message },
-            { status: 400 }
-        );
+        console.error("Error in PATCH /api/admin/questions/[id]:", error);
+        return handleApiError(error, "ANSWER QUESTION");
     }
 }
 
@@ -125,10 +123,7 @@ export async function DELETE(
             message: "Question deleted successfully",
         });
     } catch (error: any) {
-        console.error("DELETE QUESTION ERROR:", error);
-        return NextResponse.json(
-            { success: false, message: error.message },
-            { status: 400 }
-        );
+        console.error("Error in DELETE /api/admin/questions/[id]:", error);
+        return handleApiError(error, "DELETE QUESTION");
     }
 }

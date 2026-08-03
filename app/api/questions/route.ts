@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // GET - Fetch user's own questions
 export async function GET(req: Request) {
@@ -39,10 +40,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (error: any) {
-    console.error("GET USER QUESTIONS ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/questions:", error);
+    return handleApiError(error, "GET /api/questions");
   }
 }

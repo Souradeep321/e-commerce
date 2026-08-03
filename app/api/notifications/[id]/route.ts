@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Mark notification as read/unread
 export async function PATCH(
@@ -64,11 +65,8 @@ export async function PATCH(
       notification: updatedNotification,
     });
   } catch (error: any) {
-    console.error("UPDATE NOTIFICATION ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in PATCH /api/notifications/[id]:", error);
+    return handleApiError(error, "UPDATE NOTIFICATION");
   }
 }
 
@@ -122,10 +120,7 @@ export async function DELETE(
       message: "Notification deleted successfully",
     });
   } catch (error: any) {
-    console.error("DELETE NOTIFICATION ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in DELETE /api/notifications/[id]:", error);
+    return handleApiError(error, "DELETE NOTIFICATION");
   }
 }

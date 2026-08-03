@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Mark all notifications as read
 export async function PATCH(req: Request) {
@@ -31,10 +32,7 @@ export async function PATCH(req: Request) {
       updatedCount: result.count,
     });
   } catch (error: any) {
-    console.error("MARK ALL READ ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in PATCH /api/notifications/mark-all-read:", error);
+    return handleApiError(error, "MARK ALL NOTIFICATIONS AS READ");
   }
 }

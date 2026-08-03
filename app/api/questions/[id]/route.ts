@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-error-handler";
 
 // DELETE - Delete own unanswered question
 export async function DELETE(
@@ -52,10 +53,7 @@ export async function DELETE(
       message: "Question deleted successfully",
     });
   } catch (error: any) {
-    console.error("DELETE QUESTION ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in DELETE /api/questions/[id]:", error);
+    return handleApiError(error, "DELETE /api/questions/[id]");
   }
 }

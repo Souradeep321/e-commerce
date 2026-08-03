@@ -3,6 +3,7 @@
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function GET(req: Request) {
   try {
@@ -130,10 +131,7 @@ export async function GET(req: Request) {
       suggestions,
     });
   } catch (error: any) {
-    console.error("AUTOCOMPLETE ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 400 }
-    );
+    console.error("Error in GET /api/products/autocomplete:", error);
+    return handleApiError(error, "GET /api/products/autocomplete");
   }
 }

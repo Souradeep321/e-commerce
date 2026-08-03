@@ -3,6 +3,8 @@ import { requireAuthAPI } from "@/lib/auth";
 import { mergeGuestCartWithUserCart } from "@/lib/cart-merge";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { handleApiError } from "@/lib/api-error-handler";
+
 
 // FIXME: Call it once, right after successful login, on the client:
 /*
@@ -33,13 +35,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true });
 
     } catch (error) {
-        console.error("Error in cart merge route:", error);
-        return NextResponse.json(
-            {
-                success: false,
-                message: "An error occurred while merging the cart.",
-            },
-            { status: 500 }
-        );
+        console.error("Error in POST /api/cart/merge:", error);
+        return handleApiError(error, "MERGE CART");
     }
 }

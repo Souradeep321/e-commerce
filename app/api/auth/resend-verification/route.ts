@@ -6,26 +6,36 @@ import { createVerificationToken } from "@/lib/verification-token";
 import { sendVerificationEmail } from "@/lib/resend";
 import { authRateLimit } from "@/lib/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST() {
-  const { user, response } = await requireAuthAPI();
-  if (response) return response;
+  try {
+    const { user, response } = await requireAuthAPI();
+    if (response) return response;
 
-  const rateLimitResponse = await checkRateLimit(authRateLimit, `resend-verification:${user!.email}`);
-  if (rateLimitResponse) return rateLimitResponse;
+    const rateLimitResponse = await checkRateLimit(authRateLimit, `resend-verification:${user!.email}`);
+    if (rateLimitResponse) return rateLimitResponse;
 
-  const dbUser = await prisma.user.findUnique({ where: { id: user!.id } });
+    const dbUser = await prisma.user.findUnique({ where: { id: user!.id } });
 
-  if (!dbUser) {
-    return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+    if (!dbUser) {
+      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+    }
+
+    if (dbUser.isVerified) {
+      return NextResponse.json({ success: false, message: "Email already verified" }, { status: 400 });
+    }
+
+    const token = await createVerificationToken(dbUser.id);
+    if (!token) {
+      return NextResponse.json({ success: false, message: "Failed to create verification token" }, { status: 500 });
+    }
+
+    await sendVerificationEmail(dbUser.email, dbUser.name || "there", token);
+
+    return NextResponse.json({ success: true, message: "Verification email sent" });
+  }catch (error) {
+    console.error("Error in POST /api/auth/resend-verification:", error);
+    return handleApiError(error, "RESEND VERIFICATION");
   }
-
-  if (dbUser.isVerified) {
-    return NextResponse.json({ success: false, message: "Email already verified" }, { status: 400 });
-  }
-
-  const token = await createVerificationToken(dbUser.id);
-  await sendVerificationEmail(dbUser.email, dbUser.name || "there", token);
-
-  return NextResponse.json({ success: true, message: "Verification email sent" });
 }
