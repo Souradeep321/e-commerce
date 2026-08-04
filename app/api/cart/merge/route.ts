@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
             cookieStore.delete("guest_session_id");
         }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: "Cart merged successfully" });
 
     } catch (error) {
         console.error("Error in POST /api/cart/merge:", error);
