@@ -186,7 +186,7 @@ export async function GET(req: Request) {
         maxPrice: product.maxPrice,
         gender: product.gender,
         ourRecommendation: product.ourRecommendation,
-        image: product.images[0]?.url || null,
+        images: product.images,
         category: product.category,
         rating: Number(averageRating.toFixed(1)),
         reviewCount: product.reviews.length,

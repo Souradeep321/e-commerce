@@ -18,14 +18,6 @@ export async function GET(
         const order = await prisma.order.findUnique({
             where: { id },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        phone: true,
-                    },
-                },
                 items: {
                     include: {
                         product: {
@@ -40,9 +32,18 @@ export async function GET(
                             select: { size: true },
                         },
                     },
+                    address: true,
                 },
             },
         });
+
+        if (!order) {
+            return NextResponse.json({ success: false, message: "Order not found" }, { status: 404 });
+        }
+
+        if (order.userId !== user!.id) {
+            return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+        }
 
         return NextResponse.json({ success: true, message: "Order fetched successfully", order }, { status: 200 });
     } catch (error: any) {

@@ -341,10 +341,22 @@ export async function POST(req: Request) {
       },
     });
 
+    // Add this:
+    const subtotal = updatedCart!.items.reduce((sum, item) => {
+      const itemPrice = item.variant?.price ?? item.product?.price ?? 0;
+      return sum + itemPrice * item.quantity;
+    }, 0);
+
+    const itemCount = updatedCart!.items.reduce((sum, item) => sum + item.quantity, 0);
+
     return NextResponse.json({
       success: true,
       message: "Item added to cart successfully",
-      cart: updatedCart,
+      cart: {
+        ...updatedCart,
+        itemCount,
+        subtotal,
+      },
     });
   } catch (error) {
     console.error("Error in POST /api/cart:", error);
@@ -459,10 +471,22 @@ export async function PATCH(req: Request) {
       },
     });
 
+    // Add this:
+    const subtotal = updatedCart!.items.reduce((sum, item) => {
+      const itemPrice = item.variant?.price ?? item.product?.price ?? 0;
+      return sum + itemPrice * item.quantity;
+    }, 0);
+
+    const itemCount = updatedCart!.items.reduce((sum, item) => sum + item.quantity, 0);
+
     return NextResponse.json({
       success: true,
       message: "Cart updated successfully",
-      cart: updatedCart,
+      cart: {
+        ...updatedCart,
+        itemCount,
+        subtotal,
+      },
     });
   } catch (error) {
     console.error("Error in PATCH /api/cart:", error);

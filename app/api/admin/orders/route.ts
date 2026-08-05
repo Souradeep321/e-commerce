@@ -66,7 +66,7 @@ export async function GET(req: Request) {
             orders,
         });
     } catch (error) {
-        console.error("Error in GET /api/admin/orders:", error);
+        console.error("Error in GET /api/admin/orders:", error); 
         return handleApiError(error, "FETCH ADMIN ORDERS");
     }
 }
