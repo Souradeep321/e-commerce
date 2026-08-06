@@ -32,8 +32,8 @@ export async function GET(
                             select: { size: true },
                         },
                     },
-                    address: true,
                 },
+                address: true,   // ✅ sibling of items, both under the top-level `include`
             },
         });
 
