@@ -69,7 +69,7 @@ export async function PATCH(
     if (response) return response;
 
     const { id } = await params;
-    if(!id) {
+    if (!id) {
       return NextResponse.json(
         { success: false, message: "Question ID is required" },
         { status: 400 }
@@ -95,6 +95,13 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 403 }
+      );
+    }
+
+    if (question.answer) {
+      return NextResponse.json(
+        { success: false, message: "Cannot edit an already-answered question" },
+        { status: 400 }
       );
     }
 
@@ -170,7 +177,8 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: question,
+      message: "Question fetched successfully",
+      question,
     });
   } catch (error) {
     console.error("Error in GET /api/questions/[id]:", error);

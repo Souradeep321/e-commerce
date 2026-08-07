@@ -59,11 +59,7 @@ export interface AskQuestionResponse {
   message: string;
   question: Question & { product: QuestionProductSummary };
 }
-
 // ==========================================
-// PENDING — not yet reviewed, don't guess at shape:
-// GET/PATCH/DELETE /api/questions, /api/questions/[id]
-// GET/PATCH /api/admin/questions, /api/admin/questions/[id]
 // (admin routes presumably handle answering — answer/answeredAt
 // get set here, but exact response shape unconfirmed)
 // ==========================================
@@ -183,3 +179,40 @@ export interface AdminDeleteQuestionResponse {
 // "ask once, can only delete if unanswered" is the intended
 // design — not a types problem, a product decision.
 // ==========================================
+
+// ==========================================
+// GET /api/questions/[id]
+// Single question detail, ownership-checked. Includes
+// user + product summary (user summary is somewhat redundant
+// here since it's always the current user, but included anyway).
+// ==========================================
+export interface QuestionDetail {
+  id: string;
+  userId: string;
+  productId: string;
+  question: string;
+  answer: string | null;
+  createdAt: string;
+  answeredAt: string | null;
+  user: QuestionUserSummary;
+  product: QuestionProductSummary;
+}
+
+export interface GetQuestionResponse {
+  success: boolean;
+  message: string;
+  question: QuestionDetail;
+}
+
+// ==========================================
+// PATCH /api/questions/[id]
+// Edits own question text (only the `question` field is
+// updatable — partial schema, but only `question` is ever
+// applied even if other fields were sent). Returns no body,
+// just a success message — re-fetch via GET if you need the
+// updated question object.
+// ==========================================
+export interface UpdateQuestionResponse {
+  success: boolean;
+  message: string;
+}
