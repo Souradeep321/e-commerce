@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
-import cloudinary from "@/lib/cloudinary";
+import cloudinary from "@/lib/services/cloudinary";
 import { updateProductSchema } from "@/schemas";
 import slugify from "slugify";
 import { handleApiError } from "@/lib/api-error-handler";

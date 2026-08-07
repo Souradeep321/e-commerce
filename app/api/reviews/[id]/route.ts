@@ -4,7 +4,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
-import cloudinary from "@/lib/cloudinary";
+import cloudinary from "@/lib/services/cloudinary";
 import { handleApiError } from "@/lib/api-error-handler";
 
 // PATCH - Update own review

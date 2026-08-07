@@ -3,9 +3,9 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { registerSchema } from "@/schemas";
 import { createVerificationToken } from "@/lib/verification-token";
-import { sendVerificationEmail } from "@/lib/resend";
-import { authRateLimit } from "@/lib/rate-limit";
-import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { sendVerificationEmail } from "@/lib/services/resend";
+import { authRateLimit } from "@/lib/rate-limit/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit/rate-limit-helper";
 import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: Request) {

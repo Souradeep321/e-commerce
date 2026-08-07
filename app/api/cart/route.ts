@@ -9,8 +9,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 import { cartItemSchema, cartSchema } from "@/schemas/cart.schema";
-import { writeRateLimit } from "@/lib/rate-limit";
-import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { writeRateLimit } from "@/lib/rate-limit/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit/rate-limit-helper";
 import { handleApiError } from "@/lib/api-error-handler";
 
 // ============================================

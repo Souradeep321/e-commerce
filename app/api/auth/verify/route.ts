@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verifyTokenSchema } from "@/schemas";
-import { authRateLimit } from "@/lib/rate-limit";
-import { checkRateLimit } from "@/lib/rate-limit-helper";
+import { authRateLimit } from "@/lib/rate-limit/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit/rate-limit-helper";
 import { handleApiError } from "@/lib/api-error-handler";
 
 export async function POST(req: NextRequest) {
