@@ -1,32 +1,23 @@
 // lib/auth-actions.ts
 import { signIn } from "next-auth/react";
+import { mergeCart, signUp } from "@/lib/api/auth";
 
 export async function loginAndMergeCart(email: string, password: string) {
   const result = await signIn("credentials", { email, password, redirect: false });
 
   if (result?.ok) {
-    await fetch("/api/cart/merge", { method: "POST" });
+    await mergeCart(); // ← reuses the function from lib/api/auth.ts
   }
 
   return result;
 }
 
 export async function registerAndLogin(name: string, email: string, password: string) {
-  // Step 1: create the account
-  const res = await fetch("/api/auth/sign-up", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
-  });
+  const res = await signUp({ name, email, password }); // ← also reuses lib/api/auth.ts
 
-  const data = await res.json();
-
-  if (!res.ok) {
-    return { ok: false, error: data.message || "Sign up failed" };
+  if (!res.success) {
+    return { ok: false, error: res.message };
   }
 
-  // Step 2: auto-login with the same credentials
-  const loginResult = await loginAndMergeCart(email, password);
-
-  return loginResult;
+  return loginAndMergeCart(email, password);
 }
