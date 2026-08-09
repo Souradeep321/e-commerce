@@ -54,3 +54,39 @@ export interface CreateCategoryResponse {
   message: string;
   category: Category; // create() returns the flat category, no children/products yet
 }
+
+// ==========================================
+// PublicCategory
+// Shape returned by GET /api/categories — deliberately minimal
+// (select only pulls id/name/slug, no parentId) since this route
+// only returns TOP-LEVEL categories (where parentId: null) for
+// nav/browse purposes. Not the same as Category above, which
+// includes parentId for routes that need the full hierarchy.
+// ==========================================
+export interface PublicCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+// ==========================================
+// GET /api/categories
+// Public, unauthenticated. Only top-level categories — if you
+// need subcategories for a specific parent, fetch via
+// GET /api/categories/[slug] and read its `children` field instead.
+// ==========================================
+export interface PublicCategoriesResponse {
+  success: boolean;
+  message: string;
+  categories: PublicCategory[];
+}
+
+// ==========================================
+// DELETE /api/admin/categories/[id]
+// Blocks deletion (400) if the category has children or products —
+// only succeeds on a genuinely empty, leaf category.
+// ==========================================
+export interface DeleteCategoryResponse {
+  success: boolean;
+  message: string;
+}

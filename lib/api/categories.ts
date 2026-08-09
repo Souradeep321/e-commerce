@@ -1,54 +1,61 @@
-// import { Category } from '@/types/category'
+import { apiFetch } from "./client";
+import {
+  PublicCategoriesResponse,
+  CategoryDetailResponse,
+  CategoryListResponse,
+  CreateCategoryResponse,
+  DeleteCategoryResponse,
+} from "@/types/api/category.types";
+import { CategoryInput } from "@/schemas/category.schema";
 
-// export async function getCategories(): Promise<Category[]> {
-//     const res = await fetch('http://localhost:3000/api/categories', {
-//         // cache: 'no-store', // Disable caching to always fetch fresh data
-//         next: { revalidate: 3600 } // refreshes every 1 hour
-//     })
-
-//     if (!res.ok) {
-//         throw new Error('Failed to fetch categories')
-//     }
-
-//     const data = await res.json()
-//     return data.categories
-// }
-
-// lib/api/categories.ts
-
-import { Category, CategoryResponse } from '@/types/category'
-import config from '@/lib/constants'
-
-const { API_URL } = config
-
-export async function getCategories(): Promise<Category[]> {
-  try {
-    const res = await fetch(`${API_URL}/api/categories`, {
-      next: { revalidate: 3600 },
-    })
-    
-    if (!res.ok) throw new Error('Failed to fetch categories')
-    
-    const data: CategoryResponse = await res.json()
-    return data.categories
-  } catch (error) {
-    console.error('getCategories error:', error)
-    return []
-  }
+// ==========================================
+// GET /api/categories
+// Public, top-level only — for nav menus / category browse.
+// Low-churn data, safe to cache for a while.
+// ==========================================
+export function getCategories() {
+  return apiFetch<PublicCategoriesResponse>("/api/categories", {
+    next: { revalidate: 3600 },
+  });
 }
 
-export async function getCategory(slug: string): Promise<Category | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/categories/${slug}`, {
-      next: { revalidate: 1800 },
-    })
-    
-    if (!res.ok) return null
-    
-    const data = await res.json()
-    return data.category
-  } catch (error) {
-    console.error('getCategory error:', error)
-    return null
-  }
+// ==========================================
+// GET /api/categories/[slug]
+// Public, single category with children + nested products.
+// ==========================================
+export function getCategoryBySlug(slug: string) {
+  return apiFetch<CategoryDetailResponse>(`/api/categories/${slug}`, {
+    next: { revalidate: 3600 },
+  });
+}
+
+// ==========================================
+// GET /api/admin/categories
+// Admin-only, full list with relations — never cached.
+// ==========================================
+export function getAdminCategories() {
+  return apiFetch<CategoryListResponse>("/api/admin/categories", {
+    cache: "no-store",
+  });
+}
+
+// ==========================================
+// POST /api/admin/categories
+// ==========================================
+export function createCategory(data: CategoryInput) {
+  return apiFetch<CreateCategoryResponse>("/api/admin/categories", {
+    method: "POST",
+    body: JSON.stringify(data),
+    cache: "no-store",
+  });
+}
+
+// ==========================================
+// DELETE /api/admin/categories/[id]
+// ==========================================
+export function deleteCategory(id: string) {
+  return apiFetch<DeleteCategoryResponse>(`/api/admin/categories/${id}`, {
+    method: "DELETE",
+    cache: "no-store",
+  });
 }
