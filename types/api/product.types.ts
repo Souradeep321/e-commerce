@@ -156,3 +156,94 @@ export interface AutocompleteResponse {
     categories: CategorySuggestion[];
   };
 }
+
+// ==========================================
+// AdminProduct
+// Full product shape returned by admin create/update/get-one
+// routes — includes ALL images, variants, and full category
+// (unlike customer-facing routes, which curate fields).
+// ==========================================
+export interface AdminProduct {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number | null;
+  stock: number | null;
+  isActive: boolean;
+  categoryId: string | null;
+  gender: Gender | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  ourRecommendation: boolean;
+  createdAt: string;
+  updatedAt: string;
+  images: ProductImage[];
+  variants: ProductVariant[];
+  category: ProductCategoryRef | null;
+}
+
+export interface CreateProductResponse {
+  success: boolean;
+  message: string;
+  product: AdminProduct;
+}
+
+export interface UpdateProductResponse {
+  success: boolean;
+  message: string;
+  product: AdminProduct;
+}
+
+export interface GetAdminProductResponse {
+  success: boolean;
+  message: string;
+  product: AdminProduct;
+}
+
+// ==========================================
+// GET /api/admin/products
+// Admin listing — no isActive filter by default (shows
+// everything), unlike the public /api/products route.
+// ==========================================
+export interface AdminProductListItem {
+  id: string;
+  name: string;
+  slug: string;
+  price: number | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  isActive: boolean;
+  images: ProductImage[];
+  category: Pick<ProductCategoryRef, "name" | "slug"> | null;
+}
+
+export interface AdminProductListResponse {
+  success: boolean;
+  message: string;
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  products: AdminProductListItem[];
+}
+
+export interface DeleteProductResponse {
+  success: boolean;
+  message: string;
+}
+
+// ==========================================
+// PATCH /api/admin/products/[id]/status
+// Toggles isActive — response returns only a partial product
+// (id, name, isActive, description), not the full AdminProduct.
+// ==========================================
+export interface ToggleProductStatusResponse {
+  success: boolean;
+  message: string;
+  product: {
+    id: string;
+    name: string;
+    isActive: boolean;
+    description: string;
+  };
+}

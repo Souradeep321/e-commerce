@@ -1,78 +1,110 @@
+import { apiFetch } from "./client";
 import {
-  Product,
-  ProductsResponse,
-  ProductFilters,
-  ProductDetail,
-  ProductDetailResponse
-} from '@/types/product'
-import config from '@/lib/constants'
+  ProductListResponse,
+  ProductDetailResponse,
+  ProductSearchResponse,
+  AutocompleteResponse,
+  CreateProductResponse,
+  UpdateProductResponse,
+  GetAdminProductResponse,
+  AdminProductListResponse,
+  DeleteProductResponse,
+  ToggleProductStatusResponse,
+} from "@/types/api/product.types";
 
-const { API_URL } = config
+// ---------- Public ----------
 
-
-export async function getProducts(
-  filters: ProductFilters = {}
-): Promise<{
-  products: Product[]
-  totalPages: number
-  totalItems: number
-  page: number
-}> {
-  try { 
-    const params = new URLSearchParams()
-
-    if (filters.category) params.set('category', filters.category)
-    if (filters.gender) params.set('gender', filters.gender)
-    if (filters.minPrice) params.set('minPrice', filters.minPrice.toString())
-    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice.toString())
-    if (filters.sort) params.set('sort', filters.sort)
-    if (filters.page) params.set('page', filters.page.toString())
-    if (filters.limit) params.set('limit', filters.limit.toString())
-
-    const res = await fetch(`${API_URL}/api/products?${params}`, {
-      next: { revalidate: 300 },
-    })
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch products: ${res.status}`)
-    }
-
-    const data: ProductsResponse = await res.json()
-
-    return {
-      products: data.products || [],
-      totalPages: data.totalPages || 0,
-      totalItems: data.totalItems || 0,
-      page: data.page || 1,
-    }
-  } catch (error) {
-    console.error('getProducts error:', error)
-    return {
-      products: [],
-      totalPages: 0,
-      totalItems: 0,
-      page: 1,
-    }
-  }
+export function getProducts(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  gender?: string;
+  sort?: string;
+}) {
+  return apiFetch<ProductListResponse>("/api/products", {
+    params,
+    next: { revalidate: 300 },
+  });
 }
 
-export async function getProductBySlug(slug: string): Promise<ProductDetail | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/products/${slug}`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    })
+export function getProduct(slug: string) {
+  return apiFetch<ProductDetailResponse>(`/api/products/${slug}`, {
+    next: { revalidate: 300 },
+  });
+}
 
-    if (!res.ok) {
-      if (res.status === 404) {
-        return null
-      }
-      throw new Error(`Failed to fetch product: ${res.status}`)
-    }
+export function searchProducts(params: {
+  q?: string;
+  category?: string;
+  gender?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: string;
+  page?: number;
+  limit?: number;
+}) {
+  return apiFetch<ProductSearchResponse>("/api/products/search", {
+    params,
+    cache: "no-store",
+  });
+}
 
-    const data: ProductDetailResponse = await res.json()
-    return data.product
-  } catch (error) {
-    console.error(`getProductBySlug(${slug}) error:`, error)
-    return null
-  }
+export function getAutocomplete(query: string) {
+  return apiFetch<AutocompleteResponse>("/api/products/autocomplete", {
+    params: { q: query },
+    cache: "no-store",
+  });
+}
+
+// ---------- Admin ----------
+
+export function getAdminProducts(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  gender?: string;
+  sort?: string;
+  isActive?: boolean;
+}) {
+  return apiFetch<AdminProductListResponse>("/api/admin/products", {
+    params,
+    cache: "no-store",
+  });
+}
+
+export function getAdminProduct(id: string) {
+  return apiFetch<GetAdminProductResponse>(`/api/admin/products/${id}`, {
+    cache: "no-store",
+  });
+}
+
+export function createProduct(formData: FormData) {
+  return apiFetch<CreateProductResponse>("/api/admin/products", {
+    method: "POST",
+    body: formData,
+    cache: "no-store",
+  });
+}
+
+export function updateProduct(id: string, data: FormData | Record<string, unknown>) {
+  const isFormData = data instanceof FormData;
+  return apiFetch<UpdateProductResponse>(`/api/admin/products/${id}`, {
+    method: "PATCH",
+    body: isFormData ? data : JSON.stringify(data),
+    cache: "no-store",
+  });
+}
+
+export function deleteProduct(id: string) {
+  return apiFetch<DeleteProductResponse>(`/api/admin/products/${id}`, {
+    method: "DELETE",
+    cache: "no-store",
+  });
+}
+
+export function toggleProductStatus(id: string) {
+  return apiFetch<ToggleProductStatusResponse>(`/api/admin/products/${id}/status`, {
+    method: "PATCH",
+    cache: "no-store",
+  });
 }

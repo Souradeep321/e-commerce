@@ -31,17 +31,17 @@ export async function POST(req: Request) {
     // ========================================
     let price: number | null = null;
     const priceInput = formData.get("price");
-    
+
     if (priceInput) {
       const priceInRupees = Number(priceInput);
-      
+
       if (isNaN(priceInRupees) || priceInRupees < 0) {
         return NextResponse.json(
           { success: false, message: "Invalid price" },
           { status: 400 }
         );
       }
-      
+
       price = Math.round(priceInRupees * 100); // Convert to paise
     }
 
@@ -56,18 +56,18 @@ export async function POST(req: Request) {
     // ========================================
     const variantsRaw = formData.get("variants");
     let variants: any[] = [];
-    
+
     if (variantsRaw) {
       const parsedVariants = JSON.parse(variantsRaw as string);
-      
+
       // Validate and convert each variant price
       variants = parsedVariants.map((v: any) => {
         const variantPrice = Number(v.price);
-        
+
         if (isNaN(variantPrice) || variantPrice < 0) {
           throw new Error(`Invalid price for variant ${v.size}`);
         }
-        
+
         return {
           size: v.size,
           price: Math.round(variantPrice * 100), // Convert to paise
@@ -202,7 +202,7 @@ export async function POST(req: Request) {
 
     console.error("Error in POST /api/admin/products:", err);
     return handleApiError(err, "CREATE PRODUCT");
-    
+
   }
 }
 
@@ -211,9 +211,8 @@ export async function POST(req: Request) {
    ============================================ */
 export async function GET(req: Request) {
   try {
-    // ✅ FIXED: Admin auth using helper
-    // const { user, response } = await requireAdminAPI();
-    // if (response) return response;
+    const { user, response } = await requireAdminAPI();
+    if (response) return response;
 
     const { searchParams } = new URL(req.url);
 
@@ -222,17 +221,19 @@ export async function GET(req: Request) {
     const category = searchParams.get("category") || undefined;
     const gender = searchParams.get("gender") || undefined;
     const sort = searchParams.get("sort") || "latest";
+    const isActiveParam = searchParams.get("isActive"); // "true" | "false" | null
 
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      isActive: true,
-    };
+    const where: any = {};
+
+    // Only filter by isActive if explicitly requested —
+    // admin sees everything by default, unlike the public listing route
+    if (isActiveParam === "true") where.isActive = true;
+    if (isActiveParam === "false") where.isActive = false;
 
     if (category) {
-      where.category = {
-        slug: category,
-      };
+      where.category = { slug: category };
     }
 
     if (gender) {
@@ -240,45 +241,43 @@ export async function GET(req: Request) {
     }
 
     let orderBy: any = { createdAt: "desc" };
-
     if (sort === "price_asc") orderBy = { minPrice: "asc" };
     if (sort === "price_desc") orderBy = { maxPrice: "desc" };
     if (sort === "latest") orderBy = { createdAt: "desc" };
 
     const [products, total] = await Promise.all([
-          prisma.product.findMany({
-            where,
-            skip,
-            take: limit,
-            orderBy,
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              price: true,
-              minPrice: true,
-              maxPrice: true,
-              isActive: true,
-              images: {
-                take: 1, // thumbnail only
-                select: { url: true },
-              },
-              category: {
-                select: { name: true, slug: true },
-              },
-            },
-          }),
-          prisma.product.count({ where }),
-        ]);
+      prisma.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          price: true,
+          minPrice: true,
+          maxPrice: true,
+          isActive: true,
+          images: { take: 1, select: { url: true } },
+          category: { select: { name: true, slug: true } },
+        },
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-    return NextResponse.json({
-      success: true,
-      message: "Products fetched successfully",
-      products,
-      total,
-    }, { status: 200 });
-
-  } catch (err: any) {
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Products fetched successfully",
+        page,
+        totalPages: Math.ceil(total / limit), // aligned with your other list routes
+        totalItems: total,
+        products,
+      },
+      { status: 200 }
+    );
+  } catch (err) {
     console.error("Error in GET /api/admin/products:", err);
     return handleApiError(err, "FETCH PRODUCTS");
   }
