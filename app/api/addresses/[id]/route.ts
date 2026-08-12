@@ -36,31 +36,28 @@ export async function PATCH(
     const validated = addressSchema.partial().parse(body);
 
     // If setting as default, unset other defaults
-    if (validated.isDefault === true) {
-      await prisma.userAddress.updateMany({
-        where: {
-          userId: user!.id,
-          isDefault: true,
-          id: { not: id }, // Don't update the current address
-        },
-        data: { isDefault: false },
-      });
-    }
+    const address = await prisma.$transaction(async (tx) => {
+      if (validated.isDefault === true) {
+        await tx.userAddress.updateMany({
+          where: { userId: user!.id, isDefault: true, id: { not: id } },
+          data: { isDefault: false },
+        });
+      }
 
-    // Update address
-    const address = await prisma.userAddress.update({
-      where: { id },
-      data: {
-        ...(validated.fullName && { fullName: validated.fullName }),
-        ...(validated.phone && { phone: validated.phone }),
-        ...(validated.addressLine1 && { addressLine1: validated.addressLine1 }),
-        ...(validated.addressLine2 !== undefined && { addressLine2: validated.addressLine2 }),
-        ...(validated.city && { city: validated.city }),
-        ...(validated.state && { state: validated.state }),
-        ...(validated.pincode && { postalCode: validated.pincode }),
-        ...(validated.country && { country: validated.country }),
-        ...(validated.isDefault !== undefined && { isDefault: validated.isDefault }),
-      },
+      return tx.userAddress.update({
+        where: { id },
+        data: {
+          ...(validated.fullName && { fullName: validated.fullName }),
+          ...(validated.phone && { phone: validated.phone }),
+          ...(validated.addressLine1 && { addressLine1: validated.addressLine1 }),
+          ...(validated.addressLine2 !== undefined && { addressLine2: validated.addressLine2 }),
+          ...(validated.city && { city: validated.city }),
+          ...(validated.state && { state: validated.state }),
+          ...(validated.pincode && { postalCode: validated.pincode }),
+          ...(validated.country && { country: validated.country }),
+          ...(validated.isDefault !== undefined && { isDefault: validated.isDefault }),
+        },
+      });
     });
 
     return NextResponse.json({
@@ -101,23 +98,16 @@ export async function DELETE(
     }
 
     // Delete address
-    await prisma.userAddress.delete({
-      where: { id },
-    });
+    await prisma.$transaction(async (tx) => {
+      await tx.userAddress.delete({ where: { id } });
 
-    // If deleted address was default, set first remaining as default
-    if (address.isDefault) {
-      const firstAddress = await prisma.userAddress.findFirst({
-        where: { userId: user!.id },
-      });
-
-      if (firstAddress) {
-        await prisma.userAddress.update({
-          where: { id: firstAddress.id },
-          data: { isDefault: true },
-        });
+      if (address.isDefault) {
+        const firstAddress = await tx.userAddress.findFirst({ where: { userId: user!.id } });
+        if (firstAddress) {
+          await tx.userAddress.update({ where: { id: firstAddress.id }, data: { isDefault: true } });
+        }
       }
-    }
+    });
 
     return NextResponse.json({
       success: true,

@@ -31,18 +31,16 @@ export async function PATCH(
     }
 
     // Unset all other defaults
-    await prisma.userAddress.updateMany({
-      where: {
-        userId: user!.id,
-        isDefault: true,
-      },
-      data: { isDefault: false },
-    });
+    const updatedAddress = await prisma.$transaction(async (tx) => {
+      await tx.userAddress.updateMany({
+        where: { userId: user!.id, isDefault: true },
+        data: { isDefault: false },
+      });
 
-    // Set this address as default
-    const updatedAddress = await prisma.userAddress.update({
-      where: { id },
-      data: { isDefault: true },
+      return tx.userAddress.update({
+        where: { id },
+        data: { isDefault: true },
+      });
     });
 
     return NextResponse.json({

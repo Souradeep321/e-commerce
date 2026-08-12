@@ -34,44 +34,34 @@ export async function POST(req: Request) {
     if (response) return response;
 
     const body = await req.json();
-
-    // Validate using Zod
     const validated = addressSchema.parse(body);
 
-    // If setting as default, unset other defaults
-    if (validated.isDefault) {
-      await prisma.userAddress.updateMany({
-        where: {
-          userId: user!.id,
-          isDefault: true,
-        },
-        data: { isDefault: false },
-      });
-    }
+    const address = await prisma.$transaction(async (tx) => {
+      if (validated.isDefault) {
+        await tx.userAddress.updateMany({
+          where: { userId: user!.id, isDefault: true },
+          data: { isDefault: false },
+        });
+      }
 
-    // Create address
-    const address = await prisma.userAddress.create({
-      data: {
-        userId: user!.id,
-        fullName: validated.fullName,
-        phone: validated.phone,
-        addressLine1: validated.addressLine1,
-        addressLine2: validated.addressLine2,
-        city: validated.city,
-        state: validated.state,
-        postalCode: validated.pincode,
-        country: validated.country,
-        isDefault: validated.isDefault || false,
-      },
+      return tx.userAddress.create({
+        data: {
+          userId: user!.id,
+          fullName: validated.fullName,
+          phone: validated.phone,
+          addressLine1: validated.addressLine1,
+          addressLine2: validated.addressLine2,
+          city: validated.city,
+          state: validated.state,
+          postalCode: validated.pincode,
+          country: validated.country,
+          isDefault: validated.isDefault || false,
+        },
+      });
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Address created successfully",
-      address,
-    }, { status: 201 });
-  } catch (error: any) {
-    console.error("Error in POST /api/addresses:", error);
+    return NextResponse.json({ success: true, message: "Address created successfully", address }, { status: 201 });
+  } catch (error) {
     return handleApiError(error, "CREATE ADDRESS");
   }
 }
