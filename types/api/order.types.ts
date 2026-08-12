@@ -1,4 +1,13 @@
 // ==========================================
+// UserAddress
+// Matches the UserAddress Prisma model — a user's saved,
+// reusable address book entry. Has isDefault (unlike OrderAddress)
+// and no email field (unlike OrderAddress, which has an optional one).
+// ==========================================
+
+import { UserAddress } from "./address.types";
+
+// ==========================================
 // OrderAddress
 // Matches the OrderAddress Prisma model — a frozen snapshot
 // attached to one specific order. No isDefault (that concept
@@ -17,25 +26,6 @@ export interface OrderAddress {
   country: string;
 }
 
-// ==========================================
-// UserAddress
-// Matches the UserAddress Prisma model — a user's saved,
-// reusable address book entry. Has isDefault (unlike OrderAddress)
-// and no email field (unlike OrderAddress, which has an optional one).
-// ==========================================
-export interface UserAddress {
-  id: string;
-  userId: string;
-  fullName: string;
-  phone: string;
-  addressLine1: string;
-  addressLine2?: string | null;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
-}
 // ==========================================
 // OrderProductSummary
 // The reduced Product shape nested inside an order item —
