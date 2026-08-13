@@ -23,11 +23,21 @@ export const registerSchema = z.object({
     password: passwordValidation,
 });
 
-export type RegisterSchema = z.infer<typeof registerSchema>;
-
 export const loginSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
     password: z.string(),
 });
 
+export const updateProfileSchema = z.object({
+    name: nameValidation.optional(),
+    phone: z.string().min(10).max(15).optional(),
+    currentPassword: z.string().optional(),
+    newPassword: passwordValidation.optional(),
+}).refine(
+    (data) => !data.newPassword || !!data.currentPassword,
+    { message: "Current password is required to set a new password", path: ["currentPassword"] }
+);
+
+export type RegisterSchema = z.infer<typeof registerSchema>;
 export type LoginSchema = z.infer<typeof loginSchema>;
+export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;

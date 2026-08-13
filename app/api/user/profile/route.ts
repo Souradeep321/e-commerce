@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { requireAuthAPI } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { handleApiError } from "@/lib/api-error-handler";
+import { updateProfileSchema } from "@/schemas";
+
 
 // GET - Get user profile
 export async function GET(req: Request) {
@@ -50,7 +52,20 @@ export async function PATCH(req: Request) {
     if (response) return response;
 
     const body = await req.json();
-    const { name, phone, currentPassword, newPassword } = body;
+    const data = updateProfileSchema.safeParse(body);
+
+    if (!data.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Validation failed",
+          errors: data.error.flatten().fieldErrors
+        },
+        { status: 400 }
+      );
+    }
+
+    const { name, phone, currentPassword, newPassword } = data.data;
 
     // Prepare update data
     const updateData: any = {};
@@ -112,16 +127,12 @@ export async function PATCH(req: Request) {
         );
       }
 
-      // Validate new password
-      if (newPassword.length < 6) {
-        return NextResponse.json(
-          { success: false, message: "New password must be at least 6 characters" },
-          { status: 400 }
-        );
-      }
-
       // Hash new password
       updateData.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    if (Object.keys(updateData).length === 0 && !newPassword) {
+      return NextResponse.json({ success: false, message: "No changes provided" }, { status: 400 });
     }
 
     // Update user
