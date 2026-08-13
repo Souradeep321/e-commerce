@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { requireAuthAPI } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { createVerificationToken } from "@/lib/verification-token";
+import { createAuthToken } from "@/lib/verification-token";
 import { sendVerificationEmail } from "@/lib/services/resend";
 import { authRateLimit } from "@/lib/rate-limit/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limit/rate-limit-helper";
@@ -26,7 +26,7 @@ export async function POST() {
       return NextResponse.json({ success: false, message: "Email already verified" }, { status: 400 });
     }
 
-    const token = await createVerificationToken(dbUser.id);
+    const token = await createAuthToken(dbUser.id, "EMAIL_VERIFICATION", 24 * 60 * 60 * 1000); // 24 hours in milliseconds
     if (!token) {
       return NextResponse.json({ success: false, message: "Failed to create verification token" }, { status: 500 });
     }

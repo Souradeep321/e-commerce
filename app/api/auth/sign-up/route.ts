@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { registerSchema } from "@/schemas";
-import { createVerificationToken } from "@/lib/verification-token";
+import { createAuthToken } from "@/lib/verification-token";
 import { sendVerificationEmail } from "@/lib/services/resend";
 import { authRateLimit } from "@/lib/rate-limit/rate-limit";
 import { checkRateLimit } from "@/lib/rate-limit/rate-limit-helper";
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         });
 
 
-        const verificationToken = await createVerificationToken(newUser.id);
+        const verificationToken = await createAuthToken(newUser.id, "EMAIL_VERIFICATION", 24 * 60 * 60 * 1000); // 24 hours in milliseconds
 
         if (!verificationToken) {
             return NextResponse.json({
