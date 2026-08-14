@@ -9,3 +9,6 @@ export * from "./orders";
 export * from "./reviews";
 export * from "./questions";
 export * from "./notifications";
+export * from "./addresses";
+export * from "./analytics";
+export  * from "./user"

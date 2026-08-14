@@ -4,8 +4,10 @@ import {
   VerifyEmailResponse,
   ResendVerificationResponse,
   CartMergeResponse,
+  RequestPasswordResetResponse,
+  ResetPasswordResponse
 } from "@/types/api/auth.types";
-import { RegisterSchema } from "@/schemas/auth.schema";
+import { RegisterSchema, RequestPasswordResetInput, ResetPasswordInput } from "@/schemas/auth.schema";
 
 // ==========================================
 // POST /api/auth/sign-up
@@ -58,3 +60,33 @@ export function mergeCart() {
     cache: "no-store",
   });
 }
+
+// ==========================================
+// POST /api/auth/request-reset
+// Triggered from the login page's "Forgot password?" link.
+// Rate-limited by IP server-side.
+// ==========================================
+export function requestPasswordReset(data: RequestPasswordResetInput) {
+  return apiFetch<RequestPasswordResetResponse>("/api/auth/request-reset", {
+    method: "POST",
+    body: JSON.stringify(data),
+    cache: "no-store",
+  });
+}
+
+// ==========================================
+// POST /api/auth/reset-password
+// Called from the /reset-password page after the user submits
+// a new password — token comes from the page's own URL query
+// param, forwarded here in the body (see conversation notes on
+// why it's not read from req.url on the API side).
+// ==========================================
+export function resetPassword(data: ResetPasswordInput) {
+  return apiFetch<ResetPasswordResponse>("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+    cache: "no-store",
+  });
+}
+
+

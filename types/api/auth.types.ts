@@ -45,3 +45,22 @@ export interface CartMergeResponse {
   success: boolean;
   message?: string;
 }
+
+// ==========================================
+// POST /api/auth/request-reset
+// Deliberately generic response regardless of whether the
+// email exists — prevents user enumeration. Never check for
+// a "user not found" case on the frontend; there isn't one.
+// ==========================================
+export interface RequestPasswordResetResponse {
+  success: boolean;
+  message: string;
+}
+
+// ==========================================
+// POST /api/auth/reset-password
+// ==========================================
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
