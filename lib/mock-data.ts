@@ -190,3 +190,16 @@ export const mockNewArrivalProducts: ProductListItem[] = [
     reviewCount: 34,
   },
 ];
+
+// ---- Listing page mock (combines both Home arrays into one "catalog") ----
+// TEMPORARY, same as everything else in this file — delete once real
+// products exist and app/products/page.tsx calls the real getProducts().
+export const mockAllProducts: ProductListItem[] = [
+  ...mockRecommendedProducts,
+  // ...mockNewArrivalProducts,
+];
+
+// With only 8 mock products and a typical page size of 12, this is
+// realistically always 1 page — hardcoded here since there's no real
+// pagination to compute yet.
+export const mockTotalPages = 3;
