@@ -5,7 +5,7 @@ export function Hero() {
   return (
     <section className="relative flex h-[85vh] min-h-125 w-full items-end overflow-hidden bg-neutral-900">
       <Image
-        src="/images/hero-fashion.jpg"
+        src="/images/hero.avif"
         alt="Featured collection"
         fill
         priority

@@ -57,7 +57,7 @@ export default function Home() {
         <RecommendedProducts />
       </Suspense>
 
-      <PromoBanner headline="Less, but better." imageSrc="/images/banner-sale.jpg" />
+      <PromoBanner headline="Less, but better." imageSrc="/images/promo-banner.avif" />
 
       <Suspense fallback={<ProductSectionSkeleton />}>
         <NewArrivals />
