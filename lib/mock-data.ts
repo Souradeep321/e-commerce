@@ -1,5 +1,7 @@
 import { PublicCategory } from "@/types/api/category.types";
 import { ProductListItem } from "@/types/api/product.types";
+import { ProductDetail } from "@/types/api/product.types";
+
 
 /**
  * TEMPORARY — delete this file once real products/categories exist in the DB
@@ -203,3 +205,35 @@ export const mockAllProducts: ProductListItem[] = [
 // realistically always 1 page — hardcoded here since there's no real
 // pagination to compute yet.
 export const mockTotalPages = 3;
+
+
+export const mockProductDetail: ProductDetail = {
+  id: "prod_detail_1",
+  name: "Structured Wool Blazer",
+  slug: "structured-wool-blazer",
+  description:
+    "A masterclass in modern tailoring, this structured blazer redefines classic silhouettes through a minimalist lens.\nCrafted from a premium heavyweight wool blend, it offers exceptional drape without sacrificing comfort.",
+  price: null,
+  stock: null,
+  isActive: true,
+  categoryId: "cat_1",
+  gender: "UNISEX",
+  minPrice: 1899900,
+  maxPrice: 2199900,
+  ourRecommendation: true,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  images: [
+    { url: "/images/mockRecommendedProducts/product-1.avif" },
+    { url: "/images/mockRecommendedProducts/product-2.avif" },
+    { url: "/images/mockRecommendedProducts/product-3.avif" },
+  ],
+  variants: [
+    { id: "var_s", size: "S", price: 1899900, stock: 8 },
+    { id: "var_m", size: "M", price: 1899900, stock: 2 }, // triggers low-stock message
+    { id: "var_l", size: "L", price: 2099900, stock: 5 },
+    { id: "var_xl", size: "XL", price: 2199900, stock: 0 }, // triggers out-of-stock pill
+  ],
+  category: { id: "cat_1", name: "Outerwear", slug: "outerwear" },
+  reviews: [], // not rendered on this page — full reviews come from getProductReviews() in stage 2
+};

@@ -26,7 +26,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
   return (
     <div>
       {/* Main image */}
-      <div className="relative aspect-3/4 w-full overflow-hidden bg-neutral-100">
+      <div className="relative aspect-3/4 w-full h-[85%] rounded-[15px] overflow-hidden bg-neutral-100">
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedIndex}
@@ -50,16 +50,16 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
 
       {/* Thumbnails — only shown when there's more than one image to switch between */}
       {images.length > 1 && (
-        <div className="mt-3 flex gap-2 overflow-x-auto">
+        <div className="mt-3 flex gap-2 overflow-x-auto ">
           {images.map((image, index) => (
             <button
               key={image.url + index}
               type="button"
-              onClick={() => setSelectedIndex(index)}
+              onMouseEnter={() => setSelectedIndex(index)}
               aria-label={`View image ${index + 1} of ${images.length}`}
               aria-current={index === selectedIndex}
               className={cn(
-                "relative h-20 w-16 shrink-0 overflow-hidden border transition-opacity",
+                "relative h-20 w-16 shrink-0 overflow-hidden border transition-opacity rounded-[7px]",
                 index === selectedIndex
                   ? "border-neutral-900"
                   : "border-transparent opacity-60 hover:opacity-100"
@@ -69,7 +69,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                 src={image.url}
                 alt={`${productName} thumbnail ${index + 1}`}
                 fill
-                className="object-cover"
+                className="object-cover rounded-[7px]"
                 sizes="64px"
               />
             </button>

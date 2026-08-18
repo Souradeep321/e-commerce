@@ -1,4 +1,6 @@
 import { ProductListItem } from "@/types/api/product.types";
+import { ProductDetail, ProductVariant } from "@/types/api/product.types";
+
 
 /**
  * Prices are stored in paise (smallest currency unit) in the DB,
@@ -45,4 +47,19 @@ export function formatProductPrice(
  */
 export function formatRating(rating: number): string {
   return rating.toFixed(1);
+}
+
+/**
+ * Product detail page price: resolves to the exact selected variant's price
+ * once a size is picked, falls back to the flat price or min–max range
+ * (via formatProductPrice) before any size is selected.
+ */
+export function formatDetailPrice(
+  product: Pick<ProductDetail, "price" | "minPrice" | "maxPrice">,
+  selectedVariant: ProductVariant | null
+): string {
+  if (selectedVariant) {
+    return formatPaise(selectedVariant.price);
+  }
+  return formatProductPrice(product);
 }
