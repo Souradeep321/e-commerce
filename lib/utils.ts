@@ -60,4 +60,3 @@ export function formatDate(date: string | Date): string {
     day: 'numeric',
   }).format(new Date(date))
 }
-

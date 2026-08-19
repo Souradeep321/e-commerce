@@ -1,9 +1,17 @@
 import { ImageGallery } from "@/components/products/image-gallery";
 import { ProductPurchasePanel } from "@/components/products/product-purchase-panel";
 import { ProductDescription } from "@/components/products/product-description";
-import { mockProductDetail } from "@/lib/mock-data";
+import { ProductReviewsSection } from "@/components/products/product-reviews-section";
+import {
+  mockProductDetail,
+  mockAverageRating,
+  mockTotalReviews,
+  mockRatingCounts,
+  mockReviewsPage1,
+} from "@/lib/mock-data";
 // import { notFound } from "next/navigation";
 // import { getProduct } from "@/lib/api/products";
+// import { getProductReviews } from "@/lib/api/reviews";
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -12,20 +20,35 @@ interface ProductDetailPageProps {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { slug } = await params;
 
-  // TODO: swap for real fetch once products are seeded:
+  // TODO: swap for real fetches once products are seeded:
   // const { product } = await getProduct(slug);
   // if (!product) notFound();
+  // const reviewsRes = await getProductReviews(slug, { page: 1 });
   const product = mockProductDetail;
-  void slug; // mock ignores the actual slug — remove this line once the real fetch uses it above
+  void slug;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         <ImageGallery images={product.images} productName={product.name} />
-        <ProductPurchasePanel product={product} />
+        <ProductPurchasePanel
+          product={product}
+          averageRating={mockAverageRating}
+          totalReviews={mockTotalReviews}
+        />
       </div>
 
       <ProductDescription description={product.description} />
+
+      <ProductReviewsSection
+        productSlug={slug}
+        averageRating={mockAverageRating}
+        totalReviews={mockTotalReviews}
+        ratingCounts={mockRatingCounts}
+        initialReviews={mockReviewsPage1}
+        initialPage={1}
+        initialTotalPages={2}
+      />
     </main>
   );
 }

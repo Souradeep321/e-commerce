@@ -5,16 +5,18 @@ import Link from "next/link";
 import { ChevronLeft, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProductDetail } from "@/types/api/product.types";
-import { formatDetailPrice } from "@/lib/format";
+import { formatDetailPrice, formatRating } from "@/lib/format";
 import { VariantSelector } from "./variant-selector";
 import { QuantityStepper } from "./quantity-stepper";
 import { AddToCartButton } from "./add-to-cart-button";
 
 interface ProductPurchasePanelProps {
   product: ProductDetail;
+  averageRating: number;
+  totalReviews: number;
 }
 
-export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ product, averageRating, totalReviews }: ProductPurchasePanelProps) {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -64,6 +66,18 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
         )}
       </div>
 
+      {totalReviews > 0 && (
+        <a href="#reviews"
+          className="mt-2 flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900"
+        >
+          <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900" />
+          <span className="text-neutral-900">{formatRating(averageRating)}</span>
+          <span>
+            ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
+          </span>
+        </a>
+      )}
+      
       {/* Rating summary intentionally omitted — ProductDetail only returns a
           5-item review preview, not a real averageRating/totalReviews. The
           accurate version comes from getProductReviews(slug) in stage 2. */}
@@ -88,6 +102,6 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
           quantity={quantity}
         />
       </div>
-    </div>
+    </div >
   );
 }

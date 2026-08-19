@@ -1,6 +1,7 @@
 import { PublicCategory } from "@/types/api/category.types";
 import { ProductListItem } from "@/types/api/product.types";
 import { ProductDetail } from "@/types/api/product.types";
+import { Review, RatingCounts } from "@/types/api/review.types";
 
 
 /**
@@ -237,3 +238,104 @@ export const mockProductDetail: ProductDetail = {
   category: { id: "cat_1", name: "Outerwear", slug: "outerwear" },
   reviews: [], // not rendered on this page — full reviews come from getProductReviews() in stage 2
 };
+
+
+// Aggregate stats — feeds RatingSummary + RatingBreakdown
+export const mockAverageRating = 4.1;
+export const mockTotalReviews = 8;
+export const mockRatingCounts: RatingCounts = { 5: 4, 4: 2, 3: 1, 2: 1, 1: 0 };
+
+// Split into two "pages" to make Load More demonstrable without a real backend
+export const mockReviewsPage1: Review[] = [
+  {
+    id: "rev_1",
+    userId: "user_1",
+    productId: "prod_detail_1",
+    orderId: "order_1",
+    rating: 5,
+    comment: "Exceptional quality — the wool blend drapes beautifully and the tailoring is spot on.",
+    createdAt: "2026-06-10T10:00:00.000Z",
+    user: { id: "user_1", name: "Ananya R." },
+    images: [{ id: "img_1", url: "/images/mockRecommendedProducts/product-4.avif", publicId: "mock_1" }],
+  },
+  {
+    id: "rev_2",
+    userId: "user_2", 
+    productId: "prod_detail_1",
+    orderId: "order_2",
+    rating: 4,
+    comment: "Great fit, runs slightly large — consider sizing down.",
+    createdAt: "2026-06-02T10:00:00.000Z",
+    user: { id: "user_2", name: "Karan M." },
+    images: [],
+  },
+  {
+    id: "rev_3",
+    userId: "user_3",
+    productId: "prod_detail_1",
+    orderId: "order_3",
+    rating: 5,
+    comment: "Has become my go-to piece for meetings. Structured but still comfortable.",
+    createdAt: "2026-05-20T10:00:00.000Z",
+    user: { id: "user_3", name: "Priya S." },
+    images: [],
+  },
+  {
+    id: "rev_4",
+    userId: "user_4",
+    productId: "prod_detail_1",
+    orderId: "order_4",
+    rating: 3,
+    comment: "Good overall, but the lining felt a bit thin for the price point.",
+    createdAt: "2026-05-11T10:00:00.000Z",
+    user: { id: "user_4", name: "Rohan D." },
+    images: [],
+  },
+  {
+    id: "rev_5",
+    userId: "user_5",
+    productId: "prod_detail_1",
+    orderId: "order_5",
+    rating: 5,
+    comment: null, // some reviews are rating-only, no written comment
+    createdAt: "2026-04-28T10:00:00.000Z",
+    user: { id: "user_5", name: "Meera J." },
+    images: [],
+  },
+];
+
+export const mockReviewsPage2: Review[] = [
+  {
+    id: "rev_6",
+    userId: "user_6",
+    productId: "prod_detail_1",
+    orderId: "order_6",
+    rating: 2,
+    comment: "Stitching came loose after a few wears. Expected better at this price.",
+    createdAt: "2026-04-15T10:00:00.000Z",
+    user: { id: "user_6", name: "Vikram T." },
+    images: [],
+  },
+  {
+    id: "rev_7",
+    userId: "user_7",
+    productId: "prod_detail_1",
+    orderId: "order_7",
+    rating: 4,
+    comment: "Solid piece, exactly as pictured.",
+    createdAt: "2026-04-03T10:00:00.000Z",
+    user: { id: "user_7", name: "Sana K." },
+    images: [],
+  },
+  {
+    id: "rev_8",
+    userId: "user_8",
+    productId: "prod_detail_1",
+    orderId: "order_8",
+    rating: 5,
+    comment: "Perfect. Bought a second one in a different size.",
+    createdAt: "2026-03-22T10:00:00.000Z",
+    user: { id: "user_8", name: "Arjun P." },
+    images: [],
+  },
+];
