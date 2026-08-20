@@ -71,13 +71,13 @@ export function ProductPurchasePanel({ product, averageRating, totalReviews }: P
           className="mt-2 flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900"
         >
           <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900" />
-          <span className="text-neutral-900">{formatRating(averageRating)}</span>
+          <span className="text-neutral-900">{formatRating(averageRating)} </span>
           <span>
             ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
           </span>
         </a>
       )}
-      
+
       {/* Rating summary intentionally omitted — ProductDetail only returns a
           5-item review preview, not a real averageRating/totalReviews. The
           accurate version comes from getProductReviews(slug) in stage 2. */}

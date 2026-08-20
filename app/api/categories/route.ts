@@ -12,7 +12,7 @@ export async function GET(req: Request) {
         return NextResponse.json({
             success: true,
             message: "Categories fetched successfully",
-            categories
+            categories,
         }, { status: 200 });
     } catch (error: any) {
         console.error("Error in GET /api/categories:", error);

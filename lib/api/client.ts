@@ -27,10 +27,24 @@ interface ApiFetchOptions extends RequestInit {
   };
 }
 
+function getBaseUrl() {
+  // Client-side: relative URLs work fine, browser fills in the origin
+  if (typeof window !== "undefined") return "";
+
+  // Server-side: need an absolute URL
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+
+  // Vercel sets this automatically in deployed environments
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+
+  // Local dev fallback
+  return "http://localhost:3000";
+}
+
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { params, headers, body, ...rest } = options;
 
-  let url = path;
+  let url = getBaseUrl() + path;  // ← changed
   if (params) {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
@@ -39,7 +53,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     const queryString = query.toString();
     if (queryString) url += `?${queryString}`;
   }
-
+  
   const isFormData = body instanceof FormData;
 
   const res = await fetch(url, {

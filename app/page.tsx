@@ -11,6 +11,8 @@ import {
   mockRecommendedProducts,
   mockNewArrivalProducts,
 } from "@/lib/mock-data";
+// import { getCategories } from "@/lib/api/categories";
+// import { getProducts } from "@/lib/api/products";
 
 /**
  * TEMPORARY async wrappers around mock data.
@@ -22,6 +24,8 @@ import {
  * Swap point: replace the mock array with the real await call,
  * marked below with TODO.
  */
+
+
 
 async function Categories() {
   const categories = mockCategories; // TODO: const { categories } = await getCategories();

@@ -2,6 +2,7 @@ import { PublicCategory } from "@/types/api/category.types";
 import { ProductListItem } from "@/types/api/product.types";
 import { ProductDetail } from "@/types/api/product.types";
 import { Review, RatingCounts } from "@/types/api/review.types";
+import { Question } from "@/types/api/question.types";
 
 
 /**
@@ -337,5 +338,29 @@ export const mockReviewsPage2: Review[] = [
     createdAt: "2026-03-22T10:00:00.000Z",
     user: { id: "user_8", name: "Arjun P." },
     images: [],
+  },
+];
+
+
+export const mockQuestions: Question[] = [
+  {
+    id: "q_1",
+    userId: "user_9",
+    productId: "prod_detail_1",
+    question: "Does this run true to size, or should I size up?",
+    answer: "It has a slightly relaxed fit through the shoulders — we'd recommend your usual size.",
+    createdAt: "2026-06-01T10:00:00.000Z",
+    answeredAt: "2026-06-02T09:00:00.000Z",
+    user: { id: "user_9", name: "Nikhil V." },
+  },
+  {
+    id: "q_2",
+    userId: "user_10",
+    productId: "prod_detail_1",
+    question: "Is the lining removable for warmer weather?",
+    answer: null,
+    createdAt: "2026-06-15T10:00:00.000Z",
+    answeredAt: null,
+    user: { id: "user_10", name: "Divya S." },
   },
 ];
