@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { addToCart, ApiError } from "@/lib/api";
 import { ProductDetail, ProductVariant } from "@/types/api/product.types";
+import {toast} from "@/components/ui/sonner";
 
 interface AddToCartButtonProps {
   product: ProductDetail;
@@ -39,9 +40,11 @@ export function AddToCartButton({ product, selectedVariant, quantity }: AddToCar
           : { productId: product.id, quantity }
       );
       setStatus("idle");
+      toast.success("Added to cart!");
       // TODO: trigger cart drawer/toast confirmation once that UI exists
     } catch (err) {
       setStatus("error");
+      toast.error("Failed to add to cart. Please try again.");
       // TODO: surface real error message via toast once toast system exists
       console.error(err instanceof ApiError ? err.message : err);
     }

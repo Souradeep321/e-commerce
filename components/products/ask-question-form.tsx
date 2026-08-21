@@ -8,6 +8,7 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 // import { askQuestion } from "@/lib/api/questions";
+import { toast } from "@/components/ui/sonner";
 
 interface AskQuestionFormProps {
   productId: string;
@@ -31,9 +32,11 @@ export function AskQuestionForm({ productId, productSlug, onSuccess }: AskQuesti
       await new Promise((resolve) => setTimeout(resolve, 500)); // simulate network delay
       form.reset({ productId, question: "" });
       onSuccess?.();
+      toast.success("Question submitted successfully!");
     } catch (err) {
       // TODO: surface real error via toast once toast system exists
       console.error(err);
+      toast.error("Failed to submit question. Please try again.");
     } finally {
       setSubmitting(false);
     }
