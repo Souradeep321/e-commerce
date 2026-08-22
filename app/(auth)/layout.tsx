@@ -1,16 +1,17 @@
 import Link from "next/link";
+import { Wordmark } from "@/components/brand/wordmark";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        {/* TODO: replace with actual site name/logo */}
+    <main className="min-h-screen bg-white px-4 py-12">
+      <div className="mx-auto w-full max-w-83 pt-1">
         <Link
           href="/"
-          className="mb-8 block text-center font-serif text-2xl text-neutral-900"
+          className="mb-12 block text-center"
         >
-          Your Brand
+          <Wordmark />
         </Link>
+
         {children}
       </div>
     </main>

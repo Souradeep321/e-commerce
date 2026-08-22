@@ -5,7 +5,8 @@ import {
   ResendVerificationResponse,
   CartMergeResponse,
   RequestPasswordResetResponse,
-  ResetPasswordResponse
+  ResetPasswordResponse,
+  LoginCheckResponse
 } from "@/types/api/auth.types";
 import { RegisterSchema, RequestPasswordResetInput, ResetPasswordInput } from "@/schemas/auth.schema";
 
@@ -89,4 +90,17 @@ export function resetPassword(data: ResetPasswordInput) {
   });
 }
 
+// ==========================================
+// POST /api/auth/login-check
+// Read-only rate-limit precheck, called by sign-in-form.tsx before
+// signIn() — see the route's own comment for why this exists separately
+// from the actual credentials check.
+// ==========================================
+export function checkLoginRateLimit(email: string) {
+  return apiFetch<LoginCheckResponse>("/api/auth/login-check", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+    cache: "no-store",
+  });
+}
 

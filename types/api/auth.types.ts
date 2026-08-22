@@ -64,3 +64,13 @@ export interface ResetPasswordResponse {
   success: boolean;
   message: string;
 }
+
+// ==========================================
+// POST /api/auth/login-check
+// Read-only rate-limit precheck — see the route's own comment for why
+// this exists separately from NextAuth's credentials flow.
+// ==========================================
+export interface LoginCheckResponse {
+  success: boolean;
+  message?: string;
+}

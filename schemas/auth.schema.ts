@@ -7,6 +7,11 @@ export const nameValidation = z
     .max(50, "Name must be at most 50 characters long")
     .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces");
 
+export const emailValidation = z
+    .string()
+    .email({ message: "Invalid email address" })
+    .max(100, "Email must be at most 100 characters long");
+
 export const passwordValidation = z
     .string()
     .min(6, "Password must be at least 6 characters long")
@@ -19,13 +24,12 @@ export const passwordValidation = z
 
 export const registerSchema = z.object({
     name: nameValidation,
-    email: z.string().email({ message: "Invalid email address" }).max(100, "Email must be at most 100 characters long"),
-    phone: z.string().min(10).max(15).optional(),
+    email: emailValidation,
     password: passwordValidation,
 });
 
 export const loginSchema = z.object({
-    email: z.string().email({ message: "Invalid email address" }).max(100, "Email must be at most 100 characters long"),
+    email: emailValidation,
     password: z.string(),
 });
 

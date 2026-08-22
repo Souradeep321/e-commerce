@@ -8,7 +8,7 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 // import { askQuestion } from "@/lib/api/questions";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface AskQuestionFormProps {
   productId: string;
