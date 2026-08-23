@@ -13,11 +13,6 @@ export async function loginAndMergeCart(email: string, password: string) {
 }
 
 export async function registerAndLogin(name: string, email: string, password: string) {
-  const res = await signUp({ name, email, password }); // ← also reuses lib/api/auth.ts
-
-  if (!res.success) {
-    return { ok: false, error: res.message };
-  }
-
+  await signUp({ name, email, password }); // throws ApiError on failure — caller's catch handles it
   return loginAndMergeCart(email, password);
 }

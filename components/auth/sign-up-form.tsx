@@ -10,10 +10,10 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { signUp } from "@/lib/api";
+import { registerAndLogin } from "@/lib/auth-actions";
 import { ApiError } from "@/lib/api";
 import { Spinner } from "@/components/ui/spinner";
-import { Eye,EyeOff  } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -27,25 +27,43 @@ export function SignUpForm() {
     defaultValues: { name: "", email: "", password: "" },
   });
 
-  async function onSubmit(values: RegisterSchema) {
-    setSubmitting(true);
-    setFormError(null);
+async function onSubmit(values: RegisterSchema) {
+  setSubmitting(true);
+  setFormError(null);
 
-    try {
-      await signUp(values);
-      router.push("/verify-email");
+  try {
+    const result = await registerAndLogin(values.name, values.email, values.password);
+    
+    if (result?.ok) {
+      router.push("/");
       router.refresh();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setFormError(err.message);
-      } else {
-        console.error(err);
-        setFormError("Something went wrong. Please try again.");
-      }
-    } finally {
-      setSubmitting(false);
+    } else {
+      // Edge case: signUp() succeeded (account was created — it didn't
+      // throw), but the auto-login step right after it failed for some
+      // other reason (e.g. a transient issue). The account is real at
+      // this point, so we must NOT show a generic error here — that
+      // would tell the person "signup failed" when it didn't, and if
+      // they retry the form, they'll just hit the 409 "email already
+      // exists" case and be confused about why signup is "failing" for
+      // an account they never successfully made.
+      //
+      // Instead, send them to sign-in to log in manually with the
+      // password they just set. `?created=true` flags that page to show
+      // a "Account created — please sign in" banner, so it's clear this
+      // isn't an error state, just one extra manual step.
+      router.push("/sign-in?created=true");
     }
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 409) {
+      setFormError(err.message);
+    } else {
+      console.error(err);
+      setFormError("Something went wrong. Please try again.");
+    }
+  } finally {
+    setSubmitting(false);
   }
+}
 
   return (
     <motion.div

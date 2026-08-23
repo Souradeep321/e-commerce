@@ -10,17 +10,21 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { loginAndMergeCart } from "@/lib/auth-actions";
+import { Eye, EyeOff } from "lucide-react";
 import { checkLoginRateLimit } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api";
+import { loginAndMergeCart } from "@/lib/auth-actions";
 
 export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const justCreated = searchParams.get("created") === "true";
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -61,6 +65,12 @@ export function SignInForm() {
       <h1 className="mb-9 font-serif text-[29px] font-normal leading-none text-neutral-950">
         Sign In
       </h1>
+
+      {justCreated && (
+        <p className="mb-4 border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          Account created — please sign in.
+        </p>
+      )}
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <Controller
@@ -114,50 +124,59 @@ export function SignInForm() {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid} className="gap-1.5">
-              <div className="flex items-center justify-between">
-                <FieldLabel
-                  htmlFor="sign-in-password"
-                  className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-800"
-                >
-                  Password
-                </FieldLabel>
+              <FieldLabel
+                htmlFor="sign-up-password"
+                className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-800"
+              >
+                Password
+              </FieldLabel>
 
-                <Link
-                  href="/forgot-password"
+              <div className="relative">
+                <Input
+                  {...field}
+                  id="sign-up-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="••••••••"
                   className="
-                    text-[11px]
-                    text-neutral-500
-                    transition-colors
-                    hover:text-neutral-900
-                    hover:underline
-                  "
-                >
-                  Forgot password?
-                </Link>
-              </div>
+            h-8
+            rounded-none
+            border-0
+            border-b
+            border-neutral-300
+            bg-transparent
+            px-0
+            pr-8
+            text-[12px]
+            text-neutral-900
+            shadow-none
+            focus-visible:border-neutral-700
+            focus-visible:ring-0
+          "
+                />
 
-              <Input
-                {...field}
-                id="sign-in-password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={fieldState.invalid}
-                placeholder="••••••••"
-                className="
-                  h-8
-                  rounded-none
-                  border-0
-                  border-b
-                  border-neutral-300
-                  bg-transparent
-                  px-0
-                  text-[12px]
-                  text-neutral-900
-                  shadow-none
-                  focus-visible:border-neutral-700
-                  focus-visible:ring-0
-                "
-              />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="
+            absolute
+            right-0
+            top-1/2
+            -translate-y-1/2
+            text-neutral-400
+            transition-colors
+            hover:text-neutral-700
+          "
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-3.5" />
+                  ) : (
+                    <Eye className="size-3.5" />
+                  )}
+                </button>
+              </div>
 
               {fieldState.invalid && (
                 <FieldError
@@ -165,6 +184,11 @@ export function SignInForm() {
                   className="text-[11px]"
                 />
               )}
+
+              <p className="mt-0.5 text-[10px] leading-4 text-neutral-400">
+                Use 6+ characters including an uppercase letter, lowercase letter,
+                number, and special character.
+              </p>
             </Field>
           )}
         />
