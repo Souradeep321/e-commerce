@@ -20,6 +20,13 @@ export function SignInForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const justCreated = searchParams.get("created") === "true";
+  const justReset = searchParams.get("reset") === "true";
+
+  const banner = justCreated
+    ? "Account created — please sign in."
+    : justReset
+      ? "Password reset successfully — please sign in with your new password."
+      : null;
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -66,9 +73,9 @@ export function SignInForm() {
         Sign In
       </h1>
 
-      {justCreated && (
+      {banner && (
         <p className="mb-4 border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          Account created — please sign in.
+          {banner}
         </p>
       )}
 
@@ -124,19 +131,34 @@ export function SignInForm() {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid} className="gap-1.5">
-              <FieldLabel
-                htmlFor="sign-up-password"
-                className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-800"
-              >
-                Password
-              </FieldLabel>
+              <div className="flex items-center justify-between">
+                <FieldLabel
+                  htmlFor="sign-in-password"
+                  className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-800"
+                >
+                  Password
+                </FieldLabel>
+
+                <Link
+                  href="/forgot-password"
+                  className="
+            text-[11px]
+            text-neutral-900
+            transition-colors
+            hover:text-orange-600
+            hover:underline
+          "
+                >
+                  Forgot password?
+                </Link>
+              </div>
 
               <div className="relative">
                 <Input
                   {...field}
-                  id="sign-up-password"
+                  id="sign-in-password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   aria-invalid={fieldState.invalid}
                   placeholder="••••••••"
                   className="
@@ -184,11 +206,6 @@ export function SignInForm() {
                   className="text-[11px]"
                 />
               )}
-
-              <p className="mt-0.5 text-[10px] leading-4 text-neutral-400">
-                Use 6+ characters including an uppercase letter, lowercase letter,
-                number, and special character.
-              </p>
             </Field>
           )}
         />
