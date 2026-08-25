@@ -29,7 +29,14 @@ export async function POST(req: Request) {
 
         if (user) {
             const token = await createAuthToken(user.id, "PASSWORD_RESET", 60 * 60 * 1000); // 1 hour
-            await sendPasswordResetEmail(user.email, user.name || "there", token);
+            const emailResult = await sendPasswordResetEmail(user.email, user.name || "there", token);
+
+            if (!emailResult.success) {
+                return NextResponse.json(
+                    { success: false, message: "Failed to send verification email. Please try again." },
+                    { status: 500 }
+                );
+            }
         }
 
         return NextResponse.json({

@@ -31,10 +31,17 @@ export async function POST() {
       return NextResponse.json({ success: false, message: "Failed to create verification token" }, { status: 500 });
     }
 
-    await sendVerificationEmail(dbUser.email, dbUser.name || "there", token);
+    const emailResult = await sendVerificationEmail(dbUser.email, dbUser.name || "there", token);
+
+    if (!emailResult.success) {
+      return NextResponse.json(
+        { success: false, message: "Failed to send verification email. Please try again." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true, message: "Verification email sent" });
-  }catch (error) {
+  } catch (error) {
     console.error("Error in POST /api/auth/resend-verification:", error);
     return handleApiError(error, "RESEND VERIFICATION");
   }

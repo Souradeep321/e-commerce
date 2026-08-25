@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { addToCart, ApiError } from "@/lib/api";
 import { ProductDetail, ProductVariant } from "@/types/api/product.types";
-import {toast} from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 interface AddToCartButtonProps {
   product: ProductDetail;
@@ -26,10 +26,10 @@ export function AddToCartButton({ product, selectedVariant, quantity }: AddToCar
   const label = needsSizeSelection
     ? "Select a size"
     : outOfStock
-    ? "Out of Stock"
-    : status === "loading"
-    ? "Adding…"
-    : "Add to Cart";
+      ? "Out of Stock"
+      : status === "loading"
+        ? "Adding…"
+        : "Add to Cart";
 
   async function handleAddToCart() {
     setStatus("loading");

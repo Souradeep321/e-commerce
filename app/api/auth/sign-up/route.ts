@@ -58,8 +58,15 @@ export async function POST(req: Request) {
                 message: "Failed to create verification token",
             }, { status: 500 });
         }
-        
-        await sendVerificationEmail(newUser.email, String(newUser.name), verificationToken);
+
+        const emailResult = await sendVerificationEmail(newUser.email, String(newUser.name), verificationToken);
+
+        if (!emailResult.success) {
+            return NextResponse.json(
+                { success: false, message: "Failed to send verification email. Please try again." },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json({
             success: true,
