@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/providers/AuthProvider";
+import { UnverifiedEmailBanner } from "@/components/layout/unverified-email-banner";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <UnverifiedEmailBanner />
           {children}
           <Toaster position="top-center" />
         </AuthProvider>

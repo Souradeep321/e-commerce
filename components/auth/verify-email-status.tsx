@@ -10,14 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { verifyEmail, resendVerification } from "@/lib/api";
 import { ApiError } from "@/lib/api";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 type Status = "loading" | "success" | "error";
 
 export function VerifyEmailStatus() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { status: sessionStatus } = useSession(); // "authenticated" | "unauthenticated" | "loading"
+  const { status: sessionStatus, update: updateSession } = useSession(); // "authenticated" | "unauthenticated" | "loading"
 
   const [status, setStatus] = useState<Status>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -36,7 +36,10 @@ export function VerifyEmailStatus() {
     }
 
     verifyEmail(token)
-      .then(() => setStatus("success"))
+      .then(async () => {
+        await updateSession(); // triggers jwt callback's re-fetch of isVerified from DB
+        setStatus("success");
+      })
       .catch((err) => {
         setStatus("error");
         setErrorMessage(
@@ -46,23 +49,23 @@ export function VerifyEmailStatus() {
   }, [token]);
 
   async function handleResend() {
-  setResending(true);
-  try {
-    const res = await resendVerification();
-    toast.success(res.message);
-    setResent(true);
-  } catch (err) {
-    if (err instanceof ApiError) {
-      toast.error(err.message);
-    } else {
-      console.error(err);
-      toast.error("Failed to resend verification email. Please try again.");
+    setResending(true);
+    try {
+      const res = await resendVerification();
+      toast.success(res.message);
+      setResent(true);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(err.message);
+      } else {
+        console.error(err);
+        toast.error("Failed to resend verification email. Please try again.");
+      }
+      setResent(false); // stay in the failure state so they can retry
+    } finally {
+      setResending(false);
     }
-    setResent(false); // stay in the failure state so they can retry
-  } finally {
-    setResending(false);
   }
-}
 
   if (status === "loading") {
     return (
@@ -119,7 +122,11 @@ export function VerifyEmailStatus() {
         {errorMessage}
       </p>
 
-      {sessionStatus === "authenticated" ? (
+      {sessionStatus === "loading" ? (
+        <div className="mt-8 flex items-center justify-center">
+          <Spinner className="size-4" />
+        </div>
+      ) : sessionStatus === "authenticated" ? (
         resent ? (
           <p className="mt-8 text-[12px] text-neutral-500">
             A new verification email is on its way.

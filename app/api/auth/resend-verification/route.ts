@@ -26,9 +26,32 @@ export async function POST() {
       return NextResponse.json({ success: false, message: "Email already verified" }, { status: 400 });
     }
 
+    // If a still-valid (unused, unexpired) token already exists, don't
+    // invalidate it by generating a new one — that would silently break
+    // a link the person might already have open in their inbox. Just
+    // tell them to check their email instead of sending another.
+    const existingToken = await prisma.authToken.findFirst({
+      where: {
+        userId: dbUser.id,
+        type: "EMAIL_VERIFICATION",
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (existingToken) {
+      return NextResponse.json({
+        success: true,
+        message: "A verification email was already sent. Please check your inbox (and spam folder).",
+      });
+    }
+
     const token = await createAuthToken(dbUser.id, "EMAIL_VERIFICATION", 24 * 60 * 60 * 1000); // 24 hours in milliseconds
     if (!token) {
-      return NextResponse.json({ success: false, message: "Failed to create verification token" }, { status: 500 });
+      return NextResponse.json(
+        { success: false, message: "Failed to create verification token" },
+        { status: 500 }
+      );
     }
 
     const emailResult = await sendVerificationEmail(dbUser.email, dbUser.name || "there", token);
