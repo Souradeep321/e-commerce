@@ -59,6 +59,7 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user, trigger }) {
+            console.log("JWT CALLBACK FIRED — trigger:", trigger, "isVerified:", token.isVerified, "id:", token.id);
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
@@ -67,17 +68,29 @@ export const authOptions: NextAuthOptions = {
                 token.isVerified = user.isVerified;
             }
 
-            // 🔥 Re-fetch fresh isVerified from DB when explicitly triggered
-            if (trigger === "update") {
+            // So we don't need the trigger update cause 
+            // // 🔥 Re-fetch fresh isVerified from DB when explicitly triggered
+            // if (trigger === "update") {
+            //     const freshUser = await prisma.user.findUnique({
+            //         where: { id: token.id as string },
+            //         select: { isVerified: true },
+            //     });
+            //     if (freshUser) {
+            //         token.isVerified = freshUser.isVerified;
+            //     }
+            // }
+
+            // isVerified only ever flips false -> true, so once it's true we
+            // never need to touch the DB again for this token.
+            if (!token.isVerified && token.id) {
                 const freshUser = await prisma.user.findUnique({
                     where: { id: token.id as string },
                     select: { isVerified: true },
                 });
-                if (freshUser) {
-                    token.isVerified = freshUser.isVerified;
+                if (freshUser?.isVerified) {
+                    token.isVerified = true;
                 }
             }
-
             // TODO: On your /verify-email page (client-side), call update() from useSession() right after the verify API call succeeds:
 
             return token;

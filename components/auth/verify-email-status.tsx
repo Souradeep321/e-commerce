@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, getSession } from "next-auth/react";
 import { motion } from "motion/react";
 import { Check, X } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +25,10 @@ export function VerifyEmailStatus() {
   const [resent, setResent] = useState(false);
   const hasRun = useRef(false); // guards React Strict Mode's double-invoke in dev
 
+  const [verifiedOnServer, setVerifiedOnServer] = useState(false);
+
+  // Step 1: hit the verify API as soon as we have a token — this part
+  // doesn't depend on the session being ready.
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
@@ -36,9 +40,9 @@ export function VerifyEmailStatus() {
     }
 
     verifyEmail(token)
-      .then(async () => {
-        await updateSession(); // triggers jwt callback's re-fetch of isVerified from DB
-        setStatus("success");
+      .then(() => {
+        // DB write succeeded — now we just need the session synced.
+        setVerifiedOnServer(true);
       })
       .catch((err) => {
         setStatus("error");
@@ -47,6 +51,20 @@ export function VerifyEmailStatus() {
         );
       });
   }, [token]);
+
+  // Step 2: only call update() once SessionProvider is actually ready.
+  // This is the piece that was missing — update() was firing while
+  // sessionStatus was still "loading" and silently no-oping.
+  const hasSynced = useRef(false); // separate from hasRun — guards the update() call specifically
+
+  useEffect(() => {
+    if (!verifiedOnServer) return;
+    if (sessionStatus === "loading") return; // wait for provider's initial load
+    if (hasSynced.current) return;           // don't re-fire once we've already synced
+    hasSynced.current = true;
+
+    updateSession().then(() => setStatus("success"));
+  }, [verifiedOnServer, sessionStatus]);
 
   async function handleResend() {
     setResending(true);
