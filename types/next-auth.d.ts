@@ -27,5 +27,6 @@ declare module "next-auth/jwt" {
     name: string | null;
     email: string;
     isVerified: boolean;
+    roleCheckedAt?: number;
   }
 }

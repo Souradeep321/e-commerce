@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useSession, getSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "motion/react";
 import { Check, X } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +17,11 @@ type Status = "loading" | "success" | "error";
 export function VerifyEmailStatus() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { status: sessionStatus, update: updateSession } = useSession(); // "authenticated" | "unauthenticated" | "loading"
+  const {
+    status: sessionStatus,
+    update: updateSession
+  } = useSession(); // "authenticated" | "unauthenticated" | "loading"
+  const router = useRouter();
 
   const [status, setStatus] = useState<Status>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -63,8 +67,22 @@ export function VerifyEmailStatus() {
     if (hasSynced.current) return;           // don't re-fire once we've already synced
     hasSynced.current = true;
 
-    updateSession().then(() => setStatus("success"));
-  }, [verifiedOnServer, sessionStatus]);
+    updateSession()
+      .then(() => {
+        router.refresh();
+        setStatus("success");
+      })
+      .catch((error) => {
+        console.error("❌ SESSION UPDATE ERROR:", error);
+
+        setStatus("error");
+        setErrorMessage(
+          error instanceof ApiError
+            ? error.message
+            : "Email verified! It may take a moment for your account status to update."
+        );
+      });
+  }, [verifiedOnServer, sessionStatus, updateSession, router]);
 
   async function handleResend() {
     setResending(true);
