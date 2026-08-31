@@ -58,6 +58,53 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.role = user.role;
+                token.name = user.name;
+                token.email = user.email;
+                token.isVerified = user.isVerified;
+                token.roleCheckedAt = Date.now();
+            }
+
+            //  isVerified only ever flips false -> true, so once it's true we
+            // never need to touch the DB again for this token.
+            if (!token.isVerified && token.id) {
+                const freshUser = await prisma.user.findUnique({
+                    where: { id: token.id as string },
+                    select: { isVerified: true },
+                });
+                console.log("isVerified:", token.isVerified, "freshUser?.isVerified:", freshUser?.isVerified);
+                if (freshUser?.isVerified) {
+                    token.isVerified = true;
+                }
+            }
+
+            // TODO: On your /verify-email page (client-side), call update() from useSession() right after the verify API call succeeds:
+            return token;
+        }, async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.id;
+                session.user.role = token.role;
+                session.user.name = token.name;
+                session.user.email = token.email;
+                session.user.isVerified = token.isVerified;
+            }
+            return session;
+        }
+    },
+    pages: {
+        signIn: "/sign-in",
+    },
+    session: {
+        strategy: "jwt",
+    },
+    secret: process.env.NEXTAUTH_SECRET,
+};
+
+
+
         //         async jwt({ token, user, trigger }) {
         //             console.log("JWT CALLBACK FIRED — trigger:", trigger, "isVerified:", token.isVerified, "id:", token.id);
         //             if (user) {
@@ -80,90 +127,43 @@ export const authOptions: NextAuthOptions = {
         //             //     }
         //             // }
 
-        //             // isVerified only ever flips false -> true, so once it's true we
-        //             // never need to touch the DB again for this token.
-        //             if (!token.isVerified && token.id) {
-        //                 const freshUser = await prisma.user.findUnique({
-        //                     where: { id: token.id as string },
-        //                     select: { isVerified: true },
-        //                 });
-        //                 if (freshUser?.isVerified) {
-        //                     token.isVerified = true;
-        //                 }
-        //             }
+        /*
+                   // isVerified only ever flips false -> true, so once it's true we
+                   // never need to touch the DB again for this token.
+                   if (!token.isVerified && token.id) {
+                       const freshUser = await prisma.user.findUnique({
+                           where: { id: token.id as string },
+                           select: { isVerified: true },
+                       });
+                       if (freshUser?.isVerified) {
+                           token.isVerified = true;
+                       }
+                   }
+        */
 
-        //             /*
-        //             if (token.id && (!token.isVerified || token.role !== "ADMIN")) {
-        //                 const freshUser = await prisma.user.findUnique({
-        //                     where: {
-        //                         id: token.id as string,
-        //                     },
-        //                     select: {
-        //                         isVerified: true,
-        //                         role: true,
-        //                     },
-        //                 });
+        /*
+                    if (token.id && (!token.isVerified || token.role !== "ADMIN")) {
+                        const freshUser = await prisma.user.findUnique({
+                            where: {
+                                id: token.id as string,
+                            },
+                            select: {
+                                isVerified: true,
+                                role: true,
+                            },
+                        });
+                        if (freshUser) {
+                            if (!token.isVerified && freshUser.isVerified) {
+                                token.isVerified = true;
+                            }
 
-        //                 if (freshUser) {
-        //                     if (!token.isVerified && freshUser.isVerified) {
-        //                         token.isVerified = true;
-        //                     }
-
-        //                     if (token.role !== "ADMIN" && freshUser.role === "ADMIN") {
-        //                         token.role = "ADMIN";
-        //                     }
-        //                 }
-        //             }
-        // */
-        //             // TODO: On your /verify-email page (client-side), call update() from useSession() right after the verify API call succeeds:
+                            if (token.role !== "ADMIN" && freshUser.role === "ADMIN") {
+                                token.role = "ADMIN";
+                            }
+                        }
+                    }
+        */
 
         //             return token;
         //         }
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-                token.role = user.role;
-                token.name = user.name;
-                token.email = user.email;
-                token.isVerified = user.isVerified;
-                token.roleCheckedAt = Date.now();
-            }
 
-            const ROLE_RECHECK_INTERVAL = 5 * 60 * 1000; // 5 min
-            const needsRoleCheck =
-                !token.roleCheckedAt || Date.now() - (token.roleCheckedAt as number) > ROLE_RECHECK_INTERVAL;
-
-            if (token.id && (!token.isVerified || needsRoleCheck)) {
-                const freshUser = await prisma.user.findUnique({
-                    where: { id: token.id as string },
-                    select: { isVerified: true, role: true },
-                });
-
-                if (freshUser) {
-                    if (!token.isVerified && freshUser.isVerified) token.isVerified = true;
-                    if (token.role !== freshUser.role) token.role = freshUser.role; // now heals BOTH directions
-                    token.roleCheckedAt = Date.now();
-                }
-            }
-
-            return token;
-        }
-        , async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.id;
-                session.user.role = token.role;
-                session.user.name = token.name;
-                session.user.email = token.email;
-                session.user.isVerified = token.isVerified;
-            }
-            return session;
-        }
-    },
-    pages: {
-        signIn: "/sign-in",
-    },
-    session: {
-        strategy: "jwt",
-    },
-    secret: process.env.NEXTAUTH_SECRET,
-};
