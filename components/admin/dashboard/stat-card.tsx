@@ -8,6 +8,14 @@ import type { ReactNode } from "react";
 interface StatCardProps {
   label: string;
   value: string;
+   // Must be a RENDERED element (e.g. `<DollarSign className="h-3.5 w-3.5" />`),
+  // not a bare component reference (`icon={DollarSign}`) — Next.js
+  // can't serialize a raw component function across the Server →
+  // Client boundary, only already-rendered JSX. Color is applied here
+  // via a wrapping span + `currentColor` (lucide icons default to
+  // stroke="currentColor"), since color depends on emphasis/theme,
+  // which the icon's creator (a Server Component) can't know about —
+  // only size should be baked in at creation time.
   icon: ReactNode;
   // pendingOrders / lowStockProducts get a subtle attention treatment —
   // these are the two numbers an admin most needs to notice at a glance.

@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils";
 interface LineChartCardProps {
   title: string;
   data: { date: string; value: number }[];
+  // A string flag, not a function — functions can't cross the Server →
+  // Client boundary as props (only Server Actions marked "use server"
+  // can). The Client Component resolves its own formatter locally
+  // from this flag instead of receiving one from the caller.
   valueFormat?: "currency" | "number";
 }
 
