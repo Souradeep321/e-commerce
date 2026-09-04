@@ -5,6 +5,11 @@ export interface ProductImage {
   url: string;
 }
 
+export interface AdminProductImage extends ProductImage {
+  id: string;
+  publicId: string;
+}
+
 export interface ProductVariant {
   id: string;
   size: string;
@@ -178,7 +183,7 @@ export interface AdminProduct {
   ourRecommendation: boolean;
   createdAt: string;
   updatedAt: string;
-  images: ProductImage[];
+  images: AdminProductImage[];
   variants: ProductVariant[];
   category: ProductCategoryRef | null;
 }
@@ -214,7 +219,7 @@ export interface AdminProductListItem {
   minPrice: number | null;
   maxPrice: number | null;
   isActive: boolean;
-  images: ProductImage[];
+  images: AdminProductImage[];
   category: Pick<ProductCategoryRef, "name" | "slug"> | null;
 }
 

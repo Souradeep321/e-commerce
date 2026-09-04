@@ -1,7 +1,5 @@
-// lib/validations/product.ts
 import * as z from "zod";
 
-/* ---------------- ENUMS ---------------- */
 export const genderEnum = z.enum(["MEN", "WOMEN", "UNISEX"]);
 
 /* ---------------- VARIANT ---------------- */
@@ -11,8 +9,7 @@ export const productVariantSchema = z.object({
   stock: z.number().int().min(0, "Stock cannot be negative"),
 });
 
-/* ---------------- PRODUCT (create) ---------------- */
-export const productSchema = z
+export const adminProductSchema = z
   .object({
     name: z.string().min(3, "Name must be at least 3 characters").max(150),
     description: z.string().min(10, "Description must be at least 10 characters"),
@@ -54,52 +51,4 @@ export const productSchema = z
     }
   });
 
-/* ---------------- PRODUCT (update) ---------------- */
-// export const updateProductSchema = z.object({
-//   name: z.string().min(3).max(150).optional(),
-//   description: z.string().min(10).optional(),
-//   categoryId: z.string().cuid().optional().nullable(),
-//   gender: genderEnum.optional().nullable(),
-//   price: z.number().int().positive().nullable().optional(),
-//   stock: z.number().int().min(0).nullable().optional(),
-//   variants: z.array(productVariantSchema).optional(),
-//   isActive: z.boolean().optional(),
-//   ourRecommendation: z.boolean().optional(),
-// });
-
-const updateProductSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-
-  categoryId: z.string().nullable().optional(),
-
-  gender: z
-    .enum(["MEN", "WOMEN", "UNISEX"])
-    .nullable()
-    .optional(),
-
-  isActive: z.boolean().optional(),
-
-  ourRecommendation: z.boolean().optional(),
-
-  price: z.number().int().nonnegative().nullable().optional(),
-
-  stock: z.number().int().nonnegative().nullable().optional(),
-
-  variants: z
-    .array(
-      z.object({
-        size: z.string().min(1),
-        price: z.number().int().positive(),
-        stock: z.number().int().nonnegative(),
-      })
-    )
-    .optional(),
-
-  deleteImageIds: z.array(z.string()).optional(),
-});
-
-/* ---------------- TYPES ---------------- */
-export type ProductInput = z.infer<typeof productSchema>;
-export type UpdateProductInput = z.infer<typeof updateProductSchema>;
-export type ProductVariantInput = z.infer<typeof productVariantSchema>;
+export type AdminProduct = z.infer<typeof adminProductSchema>;
