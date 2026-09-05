@@ -1,5 +1,4 @@
 // app/api/admin/products/route.ts
-// ✅ FIXED VERSION - With paise conversion
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
@@ -13,9 +12,9 @@ export async function POST(req: Request) {
   const uploadedPublicIds: string[] = [];
 
   try {
-    // ✅ FIXED: Admin auth using helper
-    // const { user, response } = await requireAdminAPI();
-    // if (response) return response;
+    // 🔒 FIXED: was commented out — this route had NO auth check at all.
+    const { user, response } = await requireAdminAPI();
+    if (response) return response;
 
     /* 2️⃣ Read formData */
     const formData = await req.formData();
@@ -24,11 +23,13 @@ export async function POST(req: Request) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const categoryId = formData.get("categoryId") as string | null;
-    const gender = formData.get("gender") as any;
 
-    // ========================================
-    // ✅ FIXED: Convert rupees to paise
-    // ========================================
+    // 🔧 FIXED: an empty string ("" — e.g. an unselected <select>) is not
+    // the same as "not provided" to Zod's .optional(), and would fail
+    // genderEnum validation instead of being treated as unset.
+    const genderRaw = formData.get("gender") as string | null;
+    const gender = genderRaw && genderRaw.length > 0 ? genderRaw : undefined;
+
     let price: number | null = null;
     const priceInput = formData.get("price");
 
@@ -42,38 +43,43 @@ export async function POST(req: Request) {
         );
       }
 
-      price = Math.round(priceInRupees * 100); // Convert to paise
+      price = Math.round(priceInRupees * 100); // rupees -> paise
     }
 
-    const stock = formData.get("stock")
-      ? Number(formData.get("stock"))
-      : null;
-
+    const stock = formData.get("stock") ? Number(formData.get("stock")) : null;
     const isActive = formData.get("isActive") !== "false";
 
-    // ========================================
-    // ✅ FIXED: Convert variant prices to paise
-    // ========================================
+    // 🔧 FIXED: was thrown from inside .map() and swallowed into a
+    // generic 500 by the outer catch — now returns a precise 400
+    // immediately, before any Cloudinary uploads happen.
     const variantsRaw = formData.get("variants");
-    let variants: any[] = [];
+    let variants: { size: string; price: number; stock: number }[] = [];
 
     if (variantsRaw) {
-      const parsedVariants = JSON.parse(variantsRaw as string);
+      let parsedVariants: any[];
+      try {
+        parsedVariants = JSON.parse(variantsRaw as string);
+      } catch {
+        return NextResponse.json(
+          { success: false, message: "Invalid variants format" },
+          { status: 400 }
+        );
+      }
 
-      // Validate and convert each variant price
-      variants = parsedVariants.map((v: any) => {
+      for (const v of parsedVariants) {
         const variantPrice = Number(v.price);
-
         if (isNaN(variantPrice) || variantPrice < 0) {
-          throw new Error(`Invalid price for variant ${v.size}`);
+          return NextResponse.json(
+            { success: false, message: `Invalid price for variant "${v.size}"` },
+            { status: 400 }
+          );
         }
-
-        return {
+        variants.push({
           size: v.size,
-          price: Math.round(variantPrice * 100), // Convert to paise
+          price: Math.round(variantPrice * 100), // rupees -> paise
           stock: Number(v.stock),
-        };
-      });
+        });
+      }
     }
 
     /* 4️⃣ Validate using Zod */
@@ -89,14 +95,9 @@ export async function POST(req: Request) {
     });
 
     /* 5️⃣ Generate unique slug */
-    const baseSlug = slugify(validated.name, {
-      lower: true,
-      strict: true,
-    });
-
+    const baseSlug = slugify(validated.name, { lower: true, strict: true });
     let slug = baseSlug;
     let counter = 1;
-
     while (await prisma.product.findUnique({ where: { slug } })) {
       slug = `${baseSlug}-${counter++}`;
     }
@@ -104,8 +105,14 @@ export async function POST(req: Request) {
     /* 6️⃣ Upload images to Cloudinary */
     const imageFiles = formData.getAll("images") as File[];
 
+    // 🔧 FIXED: was a thrown Error, swallowed into a generic 500 —
+    // now a precise 400, matching the "at least one image" rule the
+    // admin form also enforces client-side.
     if (!imageFiles.length) {
-      throw new Error("At least one image is required");
+      return NextResponse.json(
+        { success: false, message: "At least one image is required" },
+        { status: 400 }
+      );
     }
 
     const uploadedImages: { url: string; publicId: string }[] = [];
@@ -123,7 +130,6 @@ export async function POST(req: Request) {
       });
 
       uploadedPublicIds.push(uploadResult.public_id);
-
       uploadedImages.push({
         url: uploadResult.secure_url,
         publicId: uploadResult.public_id,
@@ -153,27 +159,11 @@ export async function POST(req: Request) {
         isActive: validated.isActive,
         minPrice,
         maxPrice,
-
-        ...(validated.categoryId && {
-          category: {
-            connect: { id: validated.categoryId },
-          },
-        }),
-
-        ...(validated.price !== null &&
-          validated.price !== undefined && { price: validated.price }),
-        ...(validated.stock !== null &&
-          validated.stock !== undefined && { stock: validated.stock }),
-
-        images: {
-          create: uploadedImages,
-        },
-
-        ...(validated.variants.length > 0 && {
-          variants: {
-            create: validated.variants,
-          },
-        }),
+        ...(validated.categoryId && { category: { connect: { id: validated.categoryId } } }),
+        ...(validated.price !== null && validated.price !== undefined && { price: validated.price }),
+        ...(validated.stock !== null && validated.stock !== undefined && { stock: validated.stock }),
+        images: { create: uploadedImages },
+        ...(validated.variants.length > 0 && { variants: { create: validated.variants } }),
       },
       include: {
         images: true,
@@ -183,26 +173,17 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Product created successfully",
-        product,
-      },
+      { success: true, message: "Product created successfully", product },
       { status: 201 }
     );
   } catch (err: any) {
-    /* 🔥 Rollback Cloudinary uploads */
     if (uploadedPublicIds.length) {
       await Promise.all(
-        uploadedPublicIds.map((id) =>
-          cloudinary.uploader.destroy(id).catch(() => null)
-        )
+        uploadedPublicIds.map((id) => cloudinary.uploader.destroy(id).catch(() => null))
       );
     }
-
     console.error("Error in POST /api/admin/products:", err);
     return handleApiError(err, "CREATE PRODUCT");
-
   }
 }
 
@@ -221,24 +202,20 @@ export async function GET(req: Request) {
     const category = searchParams.get("category") || undefined;
     const gender = searchParams.get("gender") || undefined;
     const sort = searchParams.get("sort") || "latest";
-    const isActiveParam = searchParams.get("isActive"); // "true" | "false" | null
+    const isActiveParam = searchParams.get("isActive");
+    // NOTE: no text-search (?q=) support yet — if the admin products
+    // list page's search box is meant to hit this route for real,
+    // it needs a `q` param handled here too (e.g. name: { contains:
+    // q, mode: "insensitive" }). Flagging since the frontend already
+    // has a search input wired to a `q` URL param against mock data.
 
     const skip = (page - 1) * limit;
-
     const where: any = {};
 
-    // Only filter by isActive if explicitly requested —
-    // admin sees everything by default, unlike the public listing route
     if (isActiveParam === "true") where.isActive = true;
     if (isActiveParam === "false") where.isActive = false;
-
-    if (category) {
-      where.category = { slug: category };
-    }
-
-    if (gender) {
-      where.gender = gender;
-    }
+    if (category) where.category = { slug: category };
+    if (gender) where.gender = gender;
 
     let orderBy: any = { createdAt: "desc" };
     if (sort === "price_asc") orderBy = { minPrice: "asc" };
@@ -271,7 +248,7 @@ export async function GET(req: Request) {
         success: true,
         message: "Products fetched successfully",
         page,
-        totalPages: Math.ceil(total / limit), // aligned with your other list routes
+        totalPages: Math.ceil(total / limit),
         totalItems: total,
         products,
       },

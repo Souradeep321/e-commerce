@@ -1,5 +1,8 @@
 // ==========================================
 // Shared building blocks
+
+import { Product } from "@/app/generated/prisma/client";
+
 // ==========================================
 export interface ProductImage {
   url: string;
@@ -7,7 +10,6 @@ export interface ProductImage {
 
 export interface AdminProductImage extends ProductImage {
   id: string;
-  publicId: string;
 }
 
 export interface ProductVariant {
@@ -219,7 +221,7 @@ export interface AdminProductListItem {
   minPrice: number | null;
   maxPrice: number | null;
   isActive: boolean;
-  images: AdminProductImage[];
+  images: ProductImage[];
   category: Pick<ProductCategoryRef, "name" | "slug"> | null;
 }
 
