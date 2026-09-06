@@ -15,7 +15,7 @@ export function adminProductToFormValues(product: AdminProduct): ProductFormValu
     description: product.description,
     categoryId: product.categoryId ?? "",
     gender: product.gender ?? undefined,
-    pricingMode: hasVariants ? "variants" : "simple",
+    pricingMode: hasVariants ? "variants" : "simple", 
     priceRupees: product.price !== null ? paiseToRupees(product.price) : undefined,
     stock: product.stock ?? undefined,
     variants: product.variants.map((v) => ({

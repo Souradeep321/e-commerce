@@ -25,6 +25,7 @@ import { DeleteProductDialog } from "./delete-product-dialog";
 import { useAdminTheme } from "../../admin-theme-provider";
 import {
   productFormSchema,
+  ProductFormInput,
   ProductFormValues,
 } from "@/lib/admin/product-form-schema";
 import { adminProductToFormValues, buildProductFormData } from "@/lib/admin/product";
@@ -63,17 +64,31 @@ export function ProductForm({ mode, initialProduct }: ProductFormProps) {
   const isDark = theme === "dark";
   const sectionBorder = isDark ? "border-neutral-800" : "border-neutral-200";
 
+  // const {
+  //   control,
+  //   register,
+  //   handleSubmit,
+  //   watch,
+  //   setValue,
+  //   formState: { errors, isSubmitting },
+  // } = useForm<ProductFormValues>({
+  //   resolver: zodResolver(productFormSchema),
+  //   defaultValues: initialProduct ? adminProductToFormValues(initialProduct) : EMPTY_DEFAULTS,
+  // });
+
   const {
-    control,
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
-    defaultValues: initialProduct ? adminProductToFormValues(initialProduct) : EMPTY_DEFAULTS,
-  });
+  control,
+  register,
+  handleSubmit,
+  watch,
+  setValue,
+  formState: { errors, isSubmitting },
+} = useForm<ProductFormInput, unknown, ProductFormValues>({
+  resolver: zodResolver(productFormSchema),
+  defaultValues: initialProduct
+    ? adminProductToFormValues(initialProduct)
+    : EMPTY_DEFAULTS,
+});
 
   const { fields, append, remove, replace } = useFieldArray({ control, name: "variants" });
 
@@ -285,7 +300,7 @@ export function ProductForm({ mode, initialProduct }: ProductFormProps) {
                     <FieldLabel>Price (₹) *</FieldLabel>
                     <Input
                       type="number"
-                      value={field.value ?? ""}
+                      value={typeof field.value === "number" ? field.value : ""}
                       onChange={(e) => field.onChange(e.target.valueAsNumber)}
                       placeholder="0"
                       className={inputTheme}
@@ -302,7 +317,7 @@ export function ProductForm({ mode, initialProduct }: ProductFormProps) {
                     <FieldLabel>Stock *</FieldLabel>
                     <Input
                       type="number"
-                      value={field.value ?? ""}
+                      value={typeof field.value === "number" ? field.value : ""}
                       onChange={(e) => field.onChange(e.target.valueAsNumber)}
                       placeholder="0"
                       className={inputTheme}
