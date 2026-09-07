@@ -33,11 +33,12 @@ import { MOCK_CATEGORY_OPTIONS } from "@/lib/admin/mock-categories";
 import { createProduct, updateProduct, ApiError } from "@/lib/api";
 import { formatShortDate } from "@/lib/admin/format";
 import { cn } from "@/lib/utils";
-import { AdminProduct } from "@/types/api/product.types";
+import { AdminProduct,Category } from "@/types/api";
 
 interface ProductFormProps {
   mode: "create" | "edit";
   initialProduct?: AdminProduct;
+  categories: Category[];
 }
 
 interface NewImageState {
@@ -58,7 +59,7 @@ const EMPTY_DEFAULTS: ProductFormValues = {
   ourRecommendation: false,
 };
 
-export function ProductForm({ mode, initialProduct }: ProductFormProps) {
+export function ProductForm({ mode, initialProduct, categories }: ProductFormProps) {
   const router = useRouter();
   const { theme } = useAdminTheme();
   const isDark = theme === "dark";
@@ -77,18 +78,18 @@ export function ProductForm({ mode, initialProduct }: ProductFormProps) {
   // });
 
   const {
-  control,
-  register,
-  handleSubmit,
-  watch,
-  setValue,
-  formState: { errors, isSubmitting },
-} = useForm<ProductFormInput, unknown, ProductFormValues>({
-  resolver: zodResolver(productFormSchema),
-  defaultValues: initialProduct
-    ? adminProductToFormValues(initialProduct)
-    : EMPTY_DEFAULTS,
-});
+    control,
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormInput, unknown, ProductFormValues>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: initialProduct
+      ? adminProductToFormValues(initialProduct)
+      : EMPTY_DEFAULTS,
+  });
 
   const { fields, append, remove, replace } = useFieldArray({ control, name: "variants" });
 
@@ -243,7 +244,7 @@ export function ProductForm({ mode, initialProduct }: ProductFormProps) {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MOCK_CATEGORY_OPTIONS.map((c) => (
+                      {categories.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.name}
                         </SelectItem>

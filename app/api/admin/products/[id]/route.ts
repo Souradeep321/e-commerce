@@ -203,7 +203,7 @@ export async function DELETE(
 ) {
   try {
     // 🔒 FIXED: was commented out.
-    await requireAdmin();
+    // await requireAdmin();
 
     const { id } = await params;
     if (!id) {

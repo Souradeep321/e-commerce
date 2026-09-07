@@ -2,6 +2,7 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/products/form/product-form";
 import { mockAdminProduct } from "@/lib/admin/mock-product-detail";
+import { getAdminCategories } from "@/lib/api/categories";
 // TODO: swap for the real call once /api/admin/products/[id] is wired
 // up on the frontend: import { getAdminProduct } from "@/lib/api/products";
 
@@ -11,6 +12,8 @@ interface EditProductPageProps {
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const { id } = await params;
+  const { categories } = await getAdminCategories();
+  console.log("Fetched categories:", categories); // Debugging log
 
   // TODO: replace with:
   // const res = await getAdminProduct(id);
@@ -24,5 +27,5 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     notFound();
   }
 
-  return <ProductForm mode="edit" initialProduct={mockAdminProduct} />;
+  return <ProductForm mode="edit" initialProduct={mockAdminProduct} categories={categories} />;
 }

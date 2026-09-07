@@ -11,7 +11,7 @@ import {
   mockRecommendedProducts,
   mockNewArrivalProducts,
 } from "@/lib/mock-data";
-// import { getCategories } from "@/lib/api/categories";
+import { getCategories } from "@/lib/api";
 // import { getProducts } from "@/lib/api/products";
 
 /**
@@ -28,7 +28,9 @@ import {
 
 
 async function Categories() {
-  const categories = mockCategories; // TODO: const { categories } = await getCategories();
+  // const categories = mockCategories; // TODO: 
+  const { categories } = await getCategories();
+
   return <CategoryGrid categories={categories} />;
 }
 

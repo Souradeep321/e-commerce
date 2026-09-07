@@ -23,19 +23,11 @@ interface VariantRow {
   stock: number;
 }
 
-// interface VariantTableProps {
-//   control: Control<ProductFormValues>;
-//   register: UseFormRegister<ProductFormValues>;
-//   errors: FieldErrors<ProductFormValues>;
-//   fields: (VariantRow & { id: string })[];
-//   onAdd: () => void;
-//   onRemove: (index: number) => void;
-// }
 interface VariantTableProps {
   control: Control<ProductFormInput>;
   register: UseFormRegister<ProductFormInput>;
   errors: FieldErrors<ProductFormInput>;
-  fields: FieldArrayWithId<ProductFormInput, "variants">[];
+  fields: FieldArrayWithId<ProductFormInput, "variants", "id">[];
   onAdd: () => void;
   onRemove: (index: number) => void;
 }
