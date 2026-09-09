@@ -29,7 +29,6 @@ import {
   ProductFormValues,
 } from "@/lib/admin/product-form-schema";
 import { adminProductToFormValues, buildProductFormData } from "@/lib/admin/product";
-import { MOCK_CATEGORY_OPTIONS } from "@/lib/admin/mock-categories";
 import { createProduct, updateProduct, ApiError } from "@/lib/api";
 import { formatShortDate } from "@/lib/admin/format";
 import { cn } from "@/lib/utils";

@@ -1,8 +1,7 @@
 // app/admin/products/[id]/edit/page.tsx
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/products/form/product-form";
-import { mockAdminProduct } from "@/lib/admin/mock-product-detail";
-import { getAdminCategories } from "@/lib/api/categories";
+import { getAdminCategories,getAdminProduct } from "@/lib/api";
 // TODO: swap for the real call once /api/admin/products/[id] is wired
 // up on the frontend: import { getAdminProduct } from "@/lib/api/products";
 
@@ -12,20 +11,16 @@ interface EditProductPageProps {
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const { id } = await params;
-  const { categories } = await getAdminCategories();
-  console.log("Fetched categories:", categories); // Debugging log
 
-  // TODO: replace with:
-  // const res = await getAdminProduct(id);
-  // if (!res.success || !res.product) notFound();
-  // const product = res.product;
-  //
-  // Mock only ever has one product (mockAdminProduct), so this just
-  // checks the id matches it — once real data lands, any invalid id
-  // naturally 404s via the real fetch instead of this placeholder check.
-  if (id !== mockAdminProduct.id) {
+  const { categories } = await getAdminCategories();
+
+  const res = await getAdminProduct(id);
+
+  if (!res.success || !res.product) {
     notFound();
   }
 
-  return <ProductForm mode="edit" initialProduct={mockAdminProduct} categories={categories} />;
+  const product = res.product;
+
+  return <ProductForm mode="edit" initialProduct={product} categories={categories} />;
 }

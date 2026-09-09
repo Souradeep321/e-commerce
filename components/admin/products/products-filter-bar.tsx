@@ -49,7 +49,13 @@ export function ProductsFilterBar({ categories }: ProductsFilterBarProps) {
   }, [searchValue]);
 
   const currentCategory = searchParams.get("category") ?? "all";
-  const currentStatus = searchParams.get("status") ?? "all";
+  // const currentStatus = searchParams.get("isActive") ?? "all";
+  const currentStatus =
+    searchParams.get("isActive") === "true"
+      ? "active"
+      : searchParams.get("isActive") === "false"
+        ? "inactive"
+        : "all";
 
   const pillGroupClass = cn(
     "rounded-md border p-0.5",
@@ -102,12 +108,28 @@ export function ProductsFilterBar({ categories }: ProductsFilterBarProps) {
       <ToggleGroup
         type="single"
         value={currentStatus}
-        onValueChange={(v) => v && updateParam("status", v)}
+        onValueChange={(v) => {
+          if (v === "active") {
+            updateParam("isActive", "true");
+          } else if (v === "inactive") {
+            updateParam("isActive", "false");
+          } else {
+            updateParam("isActive", null);
+          }
+        }}
         className={pillGroupClass}
       >
-        <ToggleGroupItem value="all" className={pillItemClass}>All</ToggleGroupItem>
-        <ToggleGroupItem value="active" className={pillItemClass}>Active</ToggleGroupItem>
-        <ToggleGroupItem value="inactive" className={pillItemClass}>Inactive</ToggleGroupItem>
+        <ToggleGroupItem value="all" className={pillItemClass}>
+          All
+        </ToggleGroupItem>
+
+        <ToggleGroupItem value="active" className={pillItemClass}>
+          Active
+        </ToggleGroupItem>
+
+        <ToggleGroupItem value="inactive" className={pillItemClass}>
+          Inactive
+        </ToggleGroupItem>
       </ToggleGroup>
     </div>
   );

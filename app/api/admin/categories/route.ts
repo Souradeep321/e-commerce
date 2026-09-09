@@ -79,7 +79,7 @@ export async function GET(req: Request) {
             orderBy: { name: "asc" },
             include: {
                 children: true,
-                products: true,
+                // products: true,
             },
         });
 

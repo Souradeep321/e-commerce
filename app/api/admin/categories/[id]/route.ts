@@ -8,7 +8,7 @@ export async function DELETE(
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-        await requireAdmin();
+        // await requireAdmin();
 
         const params = await context.params;
         const { id } = params;
@@ -57,5 +57,56 @@ export async function DELETE(
     } catch (error: any) {
         console.error("Error in DELETE /api/admin/categories/[id]:", error);
         return handleApiError(error, "DELETE CATEGORY");
+    }
+}
+
+export async function GET(
+    req: Request,
+    context: { params: Promise<{ id: string }> }
+) {
+    try {
+        // await requireAdmin();
+
+        const params = await context.params;
+        const { id } = params;
+
+        if (!id) {
+            return NextResponse.json(
+                { success: false, message: "Category ID is required" },
+                { status: 400 }
+            );
+        }
+
+        // const { searchParams } = new URL(req.url);
+
+        // const page = Number(searchParams.get("page") || "1");
+        // const limit = Number(searchParams.get("limit") || "10");
+
+        // const skip = (page - 1) * limit;
+
+        const category = await prisma.category.findUnique({
+            where: { id },
+            include: {
+                children: true,
+                products: true,
+            },
+        });
+
+        if (!category) {
+            return NextResponse.json(
+                { success: false, message: "Category not found" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: "Category fetched successfully",
+            category,
+        }, { status: 200 });
+
+    } catch (error: any) {
+        console.error("Error in GET /api/admin/categories/[id]:", error);
+        return handleApiError(error, "FETCH CATEGORY");
     }
 }

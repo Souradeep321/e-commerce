@@ -6,15 +6,14 @@ import { ProductsFilterBar } from "@/components/admin/products/products-filter-b
 import { ProductsTable } from "@/components/admin/products/products-table";
 import { ProductsEmptyState } from "@/components/admin/products/products-empty-state";
 import { ProductsPagination } from "@/components/admin/products/products-pagination";
-import { getMockProductsPage, MOCK_PRODUCT_CATEGORIES } from "@/lib/admin/mock-products";
 // TODO: swap for a real call once /api/admin/products is wired up:
-// import { getAdminProducts } from "@/lib/api/products";
+import { getAdminProducts, getAdminCategories } from "@/lib/api";
 
 interface AdminProductsPageProps {
   searchParams: Promise<{
     page?: string;
     category?: string;
-    status?: string;
+    isActive?: string;
     q?: string;
   }>;
 }
@@ -22,17 +21,23 @@ interface AdminProductsPageProps {
 export default async function AdminProductsPage({ searchParams }: AdminProductsPageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
-  const status = params.status === "active" || params.status === "inactive" ? params.status : undefined;
+  const isActive = params.isActive === "true" || params.isActive === "false" ? params.isActive === "true" : undefined;
 
-  const { products, totalPages, totalItems } = getMockProductsPage({
+  const { products, totalPages, totalItems } = await getAdminProducts({
     page,
     limit: 8,
     category: params.category,
-    status,
+    isActive,
     q: params.q,
   });
+  console.log("AdminProductsPage products:", products); // Debugging log
 
-  const hasActiveFilters = Boolean(params.category || params.status || params.q);
+  const categories = await getAdminCategories();
+  const PRODUCT_CATEGORIES = Array.from(categories.categories.map((c) => c.name));
+
+
+  const hasActiveFilters = Boolean(params.category || params.isActive || params.q);
+
 
   return (
     <div>
@@ -50,7 +55,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
       </div>
 
       <div className="mt-6">
-        <ProductsFilterBar categories={MOCK_PRODUCT_CATEGORIES} />
+        <ProductsFilterBar categories={PRODUCT_CATEGORIES} />
       </div>
 
       <div className="mt-4">

@@ -65,6 +65,7 @@ export function getAdminProducts(params?: {
   gender?: string;
   sort?: string;
   isActive?: boolean;
+  q?: string;
 }) {
   return apiFetch<AdminProductListResponse>("/api/admin/products", {
     params,

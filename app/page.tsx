@@ -28,9 +28,7 @@ import { getCategories } from "@/lib/api";
 
 
 async function Categories() {
-  // const categories = mockCategories; // TODO: 
   const { categories } = await getCategories();
-
   return <CategoryGrid categories={categories} />;
 }
 

@@ -2,10 +2,12 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {useSession} from "next-auth/react";
+//  TODO: remove this useSesion later.
 
 export function Hero() {
   const { data: session } = useSession();
   console.log(session?.user);
+
   return (
     <section className="relative flex h-[85vh] min-h-125 w-full items-end overflow-hidden bg-neutral-900">
       <Image

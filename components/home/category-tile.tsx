@@ -23,7 +23,7 @@ export function CategoryTile({ category, index }: CategoryTileProps) {
       <Link
         href={`/categories/${category.slug}`}
         className={cn(
-          "group flex aspect-[4/3] items-end p-5 transition-colors duration-300",
+          "group flex aspect-4/3 items-end p-5 transition-colors duration-300",
           isDark
             ? "bg-neutral-900 hover:bg-neutral-800"
             : "bg-neutral-100 hover:bg-neutral-200"

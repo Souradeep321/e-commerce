@@ -20,6 +20,7 @@ import { useAdminTheme } from "../admin-theme-provider";
 import { formatProductPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AdminProductListItem } from "@/types/api/product.types";
+import { deleteProduct } from "@/lib/api";
 
 interface ProductsTableProps {
     products: AdminProductListItem[];

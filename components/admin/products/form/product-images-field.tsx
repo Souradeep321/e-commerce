@@ -101,12 +101,12 @@ export function ProductImagesField({
           <span className="font-medium underline">Click to upload</span> or drag and drop
         </p>
         <p className={cn("mt-1 text-xs", isDark ? "text-neutral-600" : "text-neutral-400")}>
-          PNG, JPG, WEBP up to 10MB
+          PNG, JPG, JPEG, WEBP, AVIF up to 10MB
         </p>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/png,image/jpeg,image/webp"
+          accept="image/png, image/jpeg, image/webp,image/jpg,image/avif"
           multiple
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
