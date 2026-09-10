@@ -16,11 +16,14 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useAdminTheme } from "../admin-theme-provider";
 import { formatProductPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AdminProductListItem } from "@/types/api/product.types";
-import { deleteProduct } from "@/lib/api";
+import { ApiError, deleteProduct } from "@/lib/api";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ProductsTableProps {
     products: AdminProductListItem[];
@@ -30,13 +33,30 @@ export function ProductsTable({ products }: ProductsTableProps) {
     const { theme } = useAdminTheme();
     const isDark = theme === "dark";
     const borderColor = isDark ? "border-neutral-800" : "border-neutral-200";
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const router = useRouter();
 
     // Delete isn't wired to a real mutation yet (mock data, no admin
     // DELETE call in place here) — surfaces a toast rather than doing
     // nothing silently, same "not yet wired" pattern as add-to-cart-
     // button.tsx's TODOs elsewhere in the app.
-    function handleDelete(product: AdminProductListItem) {
-        toast.info(`Delete not yet wired up — would remove "${product.name}"`);
+    async function handleDelete(product: AdminProductListItem) {
+        setDeletingId(product.id);
+
+        try {
+            await deleteProduct(product.id);
+            toast.success("Product deleted");
+            router.push("/admin/products");
+            router.refresh();
+        } catch (err) {
+            if (err instanceof ApiError) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to delete product. Please try again.");
+            }
+        } finally {
+            setDeletingId(null);
+        }
     }
 
     return (
@@ -136,8 +156,17 @@ export function ProductsTable({ products }: ProductsTableProps) {
                                             size="icon-xs"
                                             aria-label={`Delete ${product.name}`}
                                             onClick={() => handleDelete(product)}
+                                            disabled={deletingId === product.id}
                                         >
-                                            <Trash2 className={isDark ? "text-neutral-400" : "text-neutral-500"} />
+                                            {deletingId === product.id ? (
+                                                <span className="flex items-center justify-center">
+                                                    <Spinner className={isDark ? "text-red-500 size-3.5" : "size-3.5"} />
+                                                </span>
+                                            ) : (
+                                                <Trash2
+                                                    className="size-3.5 text-red-500"
+                                                />
+                                            )}
                                         </Button>
                                     </div>
                                 </TableCell>
