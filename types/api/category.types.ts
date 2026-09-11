@@ -8,16 +8,26 @@ export interface Category {
   parentId: string | null;
 }
 
-// Category with nested relations (as returned by GET endpoints that include them)
-export interface CategoryWithRelations extends Category {
+// ==========================================
+// Category with children
+// Used by:
+// - GET /api/categories/[slug]
+// - GET /api/admin/categories/[id]
+// - GET /api/admin/categories
+//
+// Products are NOT nested inside category.
+// ==========================================
+export interface CategoryWithChildren extends Category {
   children: Category[];
-  products: CategoryProductSummary[];
 }
 
-// Minimal product shape as it appears nested inside a category response
-// (matches what `products: true` on a Category include actually returns —
-// full Product fields, not a curated subset)
-export interface CategoryProductSummary {
+// ==========================================
+// Public product item for category page
+// GET /api/categories/[slug]
+//
+// This matches the select used by the API.
+// ==========================================
+export interface CategoryProductListItem {
   id: string;
   name: string;
   slug: string;
@@ -25,25 +35,92 @@ export interface CategoryProductSummary {
   minPrice: number | null;
   maxPrice: number | null;
   isActive: boolean;
-  // ...rest of Product fields, since `include: { products: true }` returns everything
+  images: {
+    url: string;
+  }[];
+}
+
+// ==========================================
+// Admin product item for category detail
+// GET /api/admin/categories/[id]
+//
+// Kept separate from the public type so admin
+// and customer APIs can evolve independently.
+// ==========================================
+export interface AdminCategoryProductListItem {
+  id: string;
+  name: string;
+  slug: string;
+  price: number | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  isActive: boolean;
+  images: {
+    url: string;
+  }[];
+}
+
+// ==========================================
+// GET /api/categories
+//
+// Public, top-level categories only.
+// ==========================================
+export interface PublicCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface PublicCategoriesResponse {
+  success: boolean;
+  message: string;
+  categories: PublicCategory[];
 }
 
 // ==========================================
 // GET /api/categories/[slug]
+//
+// Public category detail.
+// Returns category metadata + children +
+// paginated active products.
 // ==========================================
 export interface CategoryDetailResponse {
   success: boolean;
   message: string;
-  category: CategoryWithRelations | null;
+  category: CategoryWithChildren;
+  products: CategoryProductListItem[];
+  page: number;
+  totalPages: number;
+  totalItems: number;
 }
 
 // ==========================================
 // GET /api/admin/categories
+//
+// Admin category list.
+//
+// IMPORTANT:
+// This endpoint no longer includes products.
 // ==========================================
 export interface CategoryListResponse {
   success: boolean;
   message: string;
-  categories: CategoryWithRelations[];
+  categories: CategoryWithChildren[];
+}
+
+// ==========================================
+// GET /api/admin/categories/[id]
+//
+// Admin category detail + paginated products.
+// ==========================================
+export interface AdminCategoryDetailResponse {
+  success: boolean;
+  message: string;
+  category: CategoryWithChildren;
+  products: AdminCategoryProductListItem[];
+  page: number;
+  totalPages: number;
+  totalItems: number;
 }
 
 // ==========================================
@@ -52,39 +129,11 @@ export interface CategoryListResponse {
 export interface CreateCategoryResponse {
   success: boolean;
   message: string;
-  category: Category; // create() returns the flat category, no children/products yet
-}
-
-// ==========================================
-// PublicCategory
-// Shape returned by GET /api/categories — deliberately minimal
-// (select only pulls id/name/slug, no parentId) since this route
-// only returns TOP-LEVEL categories (where parentId: null) for
-// nav/browse purposes. Not the same as Category above, which
-// includes parentId for routes that need the full hierarchy.
-// ==========================================
-export interface PublicCategory {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-// ==========================================
-// GET /api/categories
-// Public, unauthenticated. Only top-level categories — if you
-// need subcategories for a specific parent, fetch via
-// GET /api/categories/[slug] and read its `children` field instead.
-// ==========================================
-export interface PublicCategoriesResponse {
-  success: boolean;
-  message: string;
-  categories: PublicCategory[];
+  category: Category;
 }
 
 // ==========================================
 // DELETE /api/admin/categories/[id]
-// Blocks deletion (400) if the category has children or products —
-// only succeeds on a genuinely empty, leaf category.
 // ==========================================
 export interface DeleteCategoryResponse {
   success: boolean;
