@@ -29,6 +29,7 @@ export default async function AdminDashboardPage({ searchParams }: AdminDashboar
   void period; // TODO: pass to getAnalytics(Number(period)) once real — mock data doesn't vary by period yet
 
   const { data } = mockAnalyticsResponse;
+  // const { data } = await getAnalytics(Number(period));
   const { overview, orderStatus, charts, topProducts, recentOrders } = data;
 
   const today = new Date().toLocaleDateString("en-IN", {
