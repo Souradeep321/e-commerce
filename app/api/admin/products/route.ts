@@ -203,6 +203,7 @@ export async function GET(req: Request) {
     const gender = searchParams.get("gender") || undefined;
     const sort = searchParams.get("sort") || "latest";
     const isActiveParam = searchParams.get("isActive");
+    const ourRecommendationParam = searchParams.get("ourRecommendation");
     // 🔧 FIXED: added — the admin products list frontend already has
     // a search box wired to this `q` param (against mock data until
     // now); this was the one gap flagged without a fix in the prior
@@ -214,6 +215,13 @@ export async function GET(req: Request) {
 
     if (isActiveParam === "true") where.isActive = true;
     if (isActiveParam === "false") where.isActive = false;
+    if (ourRecommendationParam === "true") {
+      where.ourRecommendation = true;
+    }
+
+    if (ourRecommendationParam === "false") {
+      where.ourRecommendation = false;
+    }
     if (category) where.category = { slug: category };
     if (gender) where.gender = gender;
     if (q) {

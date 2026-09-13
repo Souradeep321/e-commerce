@@ -20,6 +20,7 @@ export function getProducts(params?: {
   category?: string;
   gender?: string;
   sort?: string;
+  ourRecommendation?: boolean;
 }) {
   return apiFetch<ProductListResponse>("/api/products", {
     params,

@@ -33,7 +33,7 @@ async function Categories() {
 }
 
 async function RecommendedProducts() {
-  const products = mockRecommendedProducts; // TODO: await getProducts({ ... })
+  const products = mockRecommendedProducts; // TODO: await await getProducts({ sort: "latest", ourRecommendation: true,});
   return <ProductSection title="Recommended" products={products} />;
 }
 
