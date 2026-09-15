@@ -6,8 +6,12 @@ import { CreateCategoryDialog } from "@/components/admin/categories/create-categ
 export default async function AdminCategoriesPage() {
   const { categories } = await getAdminCategories();
 
-  // Only top-level categories are valid "parent" choices — matches the
-  // one-level nesting Category.children (Category[], not recursive) assumes.
+  // Route returns ALL categories flat (parents + children alike), each
+  // with its own `children` included — not just top-level. Filter here
+  // so children aren't rendered twice (once nested, once as their own
+  // top-level card). Parent-select options still use the full list.
+  const topLevelCategories = categories.filter((c) => c.parentId === null);
+
   const parentOptions = categories.map(({ id, name, slug, parentId }) => ({
     id,
     name,
@@ -28,7 +32,7 @@ export default async function AdminCategoriesPage() {
       </div>
 
       <div className="mt-6">
-        <CategoriesList categories={categories} />
+        <CategoriesList categories={topLevelCategories} />
       </div>
     </div>
   );
