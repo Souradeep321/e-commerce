@@ -11,7 +11,7 @@ import {
   mockRecommendedProducts,
   mockNewArrivalProducts,
 } from "@/lib/mock-data";
-import { getCategories } from "@/lib/api";
+import { getCategories,getProducts } from "@/lib/api";
 // import { getProducts } from "@/lib/api/products";
 
 /**
@@ -33,16 +33,20 @@ async function Categories() {
 }
 
 async function RecommendedProducts() {
-  const products = mockRecommendedProducts; // TODO: await await getProducts({ sort: "latest", ourRecommendation: true,});
-  return <ProductSection title="Recommended" products={products} />;
+  // TODO: await await getProducts({ sort: "latest", ourRecommendation: true,});
+  const products =  await getProducts({ sort: "latest", ourRecommendation: true,}); 
+  console.log("products", products);
+  console.log("products", products.products);
+  return <ProductSection title="Recommended" products={products.products} />;
 }
 
 async function NewArrivals() {
-  const products = mockNewArrivalProducts; // TODO: await getProducts({ sort: "latest" })
+   // TODO: await getProducts({ sort: "latest" })
+  const products =  await getProducts({ sort: "latest", limit: 10}); 
   return (
     <ProductSection
       title="New Arrivals"
-      products={products}
+      products={products.products}
       viewAllHref="/products?sort=latest"
     />
   );
