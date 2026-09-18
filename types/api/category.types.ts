@@ -65,10 +65,8 @@ export interface AdminCategoryProductListItem {
 //
 // Public, top-level categories only.
 // ==========================================
-export interface PublicCategory {
-  id: string;
-  name: string;
-  slug: string;
+export interface PublicCategory extends Category {
+ 
 }
 
 export interface PublicCategoriesResponse {

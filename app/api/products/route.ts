@@ -14,6 +14,7 @@ export async function GET(req: Request) {
     const category = searchParams.get("category"); // category slug
     const gender = searchParams.get("gender");     // MEN | WOMEN | UNISEX
     const sort = searchParams.get("sort");         // price_asc | price_desc | latest
+    const ourRecommendationParam = searchParams.get("ourRecommendation");
 
     const skip = (page - 1) * limit;
 
@@ -30,6 +31,14 @@ export async function GET(req: Request) {
       where.category = {
         slug: category,
       };
+    }
+
+    if (ourRecommendationParam === "true") {
+      where.ourRecommendation = true;
+    }
+
+    if (ourRecommendationParam === "false") {
+      where.ourRecommendation = false;
     }
 
     // ---------- Sorting ----------

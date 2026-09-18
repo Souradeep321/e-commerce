@@ -29,24 +29,25 @@ import { getCategories,getProducts } from "@/lib/api";
 
 async function Categories() {
   const { categories } = await getCategories();
-  return <CategoryGrid categories={categories} />;
+  // console.log("categories", categories);
+  const categoriesWithOutChildren = categories.filter((c) => c.parentId === null);
+  console.log("categoriesWithOutChildren", categoriesWithOutChildren);
+  return <CategoryGrid categories={categoriesWithOutChildren} />;
 }
 
 async function RecommendedProducts() {
-  // TODO: await await getProducts({ sort: "latest", ourRecommendation: true,});
-  const products =  await getProducts({ sort: "latest", ourRecommendation: true,}); 
-  console.log("products", products);
-  console.log("products", products.products);
-  return <ProductSection title="Recommended" products={products.products} />;
+  // TODO: Update the ourRecommendation field in the database for some products to true so that they can be fetched here.
+  const {products} =  await getProducts({ sort: "latest", limit: 10}); 
+  // The recommended products are 0 because the ourRecommendation field is not being set to true in the database.
+  return <ProductSection title="Recommended" products={products} />;
 }
 
 async function NewArrivals() {
-   // TODO: await getProducts({ sort: "latest" })
-  const products =  await getProducts({ sort: "latest", limit: 10}); 
+  const {products} =  await getProducts({ sort: "latest", limit: 10}); 
   return (
     <ProductSection
       title="New Arrivals"
-      products={products.products}
+      products={products}
       viewAllHref="/products?sort=latest"
     />
   );
