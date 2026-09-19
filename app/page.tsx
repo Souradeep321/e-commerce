@@ -6,13 +6,7 @@ import { ProductSection } from "@/components/home/product-section";
 import { ProductSectionSkeleton } from "@/components/home/product-section-skeleton";
 import { PromoBanner } from "@/components/home/promo-banner";
 import { ValuePropStrip } from "@/components/home/value-prop-strip";
-import {
-  mockCategories,
-  mockRecommendedProducts,
-  mockNewArrivalProducts,
-} from "@/lib/mock-data";
-import { getCategories,getProducts } from "@/lib/api";
-// import { getProducts } from "@/lib/api/products";
+import { getCategories, getProducts } from "@/lib/api";
 
 /**
  * TEMPORARY async wrappers around mock data.
@@ -37,13 +31,13 @@ async function Categories() {
 
 async function RecommendedProducts() {
   // TODO: Update the ourRecommendation field in the database for some products to true so that they can be fetched here.
-  const {products} =  await getProducts({ sort: "latest", limit: 10}); 
+  const { products } = await getProducts({ sort: "latest", limit: 10 });
   // The recommended products are 0 because the ourRecommendation field is not being set to true in the database.
   return <ProductSection title="Recommended" products={products} />;
 }
 
 async function NewArrivals() {
-  const {products} =  await getProducts({ sort: "latest", limit: 10}); 
+  const { products } = await getProducts({ sort: "latest", limit: 10 });
   return (
     <ProductSection
       title="New Arrivals"

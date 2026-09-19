@@ -1,9 +1,8 @@
 // app/admin/products/[id]/edit/page.tsx
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/products/form/product-form";
-import { getAdminCategories,getAdminProduct } from "@/lib/api";
+import { getAdminCategories, getAdminProduct } from "@/lib/api";
 // TODO: swap for the real call once /api/admin/products/[id] is wired
-// up on the frontend: import { getAdminProduct } from "@/lib/api/products";
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;

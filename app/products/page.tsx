@@ -1,11 +1,10 @@
 import { Suspense } from "react";
-// import { getProducts } from "@/lib/api/products";
-// import { getCategories } from "@/lib/api/categories";
 import { FilterBar } from "@/components/products/filter-bar";
 import { ProductGrid } from "@/components/products/product-grid";
 import { ProductGridSkeleton } from "@/components/products/product-grid-skeleton";
 import { Pagination } from "@/components/products/pagination";
-import { mockCategories, mockAllProducts, mockTotalPages } from "@/lib/mock-data";
+import { getProducts, getCategories } from "@/lib/api";
+// import { mockCategories, mockAllProducts, mockTotalPages } from "@/lib/mock-data";
 
 interface ProductsPageProps {
     searchParams: Promise<{
@@ -22,19 +21,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
     // categories load independently of the product query — fetch in parallel,
     // not sequentially, since one doesn't depend on the other
-    //   const [{ categories }, { products, totalPages }] = await Promise.all([
-    //     getCategories(),
-    //     getProducts({
-    //       page,
-    //       category: params.category,
-    //       gender: params.gender,
-    //       sort: params.sort,
-    //     }),
-    //   ]);
+    const [{ categories }, { products, totalPages }] = await Promise.all([
+        getCategories(),
+        getProducts({
+            page,
+            category: params.category,
+            gender: params.gender,
+            sort: params.sort,
+        }),
+    ]);
 
-    const categories = mockCategories;
-    const products = mockAllProducts;
-    const totalPages = mockTotalPages;
+    // const categories = mockCategories;
+    // const products = mockAllProducts;
+    // const totalPages = mockTotalPages;
 
     return (
         <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

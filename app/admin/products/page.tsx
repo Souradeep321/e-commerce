@@ -6,7 +6,6 @@ import { ProductsFilterBar } from "@/components/admin/products/products-filter-b
 import { ProductsTable } from "@/components/admin/products/products-table";
 import { ProductsEmptyState } from "@/components/admin/products/products-empty-state";
 import { ProductsPagination } from "@/components/admin/products/products-pagination";
-// TODO: swap for a real call once /api/admin/products is wired up:
 import { getAdminProducts, getAdminCategories } from "@/lib/api";
 
 interface AdminProductsPageProps {
