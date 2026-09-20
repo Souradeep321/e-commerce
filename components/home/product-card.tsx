@@ -1,14 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { Star, Plus } from "lucide-react";
+// import { toast } from "sonner";
 import { ProductListItem } from "@/types/api/product.types";
 import { formatProductPrice, formatRating } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { addToCart, ApiError } from "@/lib/api";
+// import { Spinner } from "@/components/ui/spinner";
+// import { addToCart, ApiError } from "@/lib/api";
+// import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 // Some list endpoints return a reduced product shape — e.g.
 // CategoryProductListItem (GET /api/categories/[slug]) deliberately
@@ -27,11 +31,36 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter()
   const image = product.images[0]?.url ?? "/images/placeholder.jpg";
   const reviewCount = product.reviewCount ?? 0;
 
+  // price === null ⟺ the product has variants — same convention
+  // formatProductPrice (lib/format.ts) and the product schemas already
+  // rely on (price XOR variants, enforced server-side via superRefine).
+  // Quick-add has no way to know which size to add from a list card,
+  // so it's hidden entirely for variant products rather than guessing
+  // or adding without one — size selection belongs on the product
+  // detail page.
+  {/* This is technically valid, but it creates different behavior depending on the product */ }
+  // const hasVariants = product.price === null;
+
+  // const [adding, setAdding] = useState(false);
+
   // async function handleQuickAdd(e: React.MouseEvent<HTMLButtonElement>) {
-  //   e.preventDefault();
+  //   e.preventDefault(); // this is an in-place add, not a navigation
+  //   e.stopPropagation();
+  //   if (adding) return;
+
+  //   setAdding(true);
+  //   try {
+  //     await addToCart({ productId: product.id, quantity: 1 });
+  //     toast.success(`Added ${product.name} to cart`);
+  //   } catch (err) {
+  //     toast.error(err instanceof ApiError ? err.message : "Couldn't add to cart. Please try again.");
+  //   } finally {
+  //     setAdding(false);
+  //   }
   // }
 
   return (
@@ -52,21 +81,32 @@ export function ProductCard({ product }: ProductCardProps) {
             sizes="(max-width: 768px) 50vw, 25vw"
           />
 
-          {/* Quick-add — shadcn Button, icon-only variant */}
+          {/* Quick-add — flat-price products only, see hasVariants note above */}
+          {/* This is technically valid, but it creates different behavior depending on the product */}
+          {/* {!hasVariants && (
+            <Button
+              size="icon"
+              variant="secondary"
+              aria-label={adding ? "Adding to cart" : `Quick add ${product.name}`}
+              onClick={handleQuickAdd}
+              disabled={adding}
+              className={cn(
+                "absolute bottom-2 right-2 h-8 w-8 opacity-0 transition-opacity duration-300 group-hover:opacity-100",
+                adding && "opacity-100"
+              )}
+            >
+              {adding ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            </Button>
+          )} */}
+
           <Button
             size="icon"
             variant="secondary"
             aria-label={`Quick add ${product.name}`}
-            onClick={async (e) => {
-              e.preventDefault(); // don't navigate when clicking quick-add
-              // try {
-              //   await addToCart({ productId: product.id, quantity: 1 });
-              //   toast.success("Added to cart!");
-              // } catch (err) {
-              //   toast.error("Failed to add to cart. Please try again.");
-              //   console.error(err instanceof ApiError ? err.message : err);
-              // }
-              // TODO: wire to addToCart() once cart integration lands
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              router.push(`/products/${product.slug}`);
             }}
             className="absolute bottom-2 right-2 h-8 w-8 opacity-0 transition-opacity
                        duration-300 group-hover:opacity-100"
