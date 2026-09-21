@@ -7,8 +7,10 @@ import { questionSchema, QuestionInput } from "@/schemas/question.schema";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-// import { askQuestion } from "@/lib/api/questions";
+import { askQuestion } from "@/lib/api/questions";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation"
+import { ApiError } from "@/lib/api/client";
 
 interface AskQuestionFormProps {
   productId: string;
@@ -17,6 +19,7 @@ interface AskQuestionFormProps {
 }
 
 export function AskQuestionForm({ productId, productSlug, onSuccess }: AskQuestionFormProps) {
+  const router = useRouter()
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<QuestionInput>({
@@ -28,15 +31,16 @@ export function AskQuestionForm({ productId, productSlug, onSuccess }: AskQuesti
     setSubmitting(true);
     try {
       // TODO: swap for the real call once auth exists:
-      // await askQuestion(productSlug, values.question);
+      const response = await askQuestion(productSlug, values.question);
       await new Promise((resolve) => setTimeout(resolve, 500)); // simulate network delay
       form.reset({ productId, question: "" });
       onSuccess?.();
-      toast.success("Question submitted successfully!");
+      toast.success(response.message || "Question submitted successfully!");
+      router.refresh() // Refresh the page to show the new question
     } catch (err) {
       // TODO: surface real error via toast once toast system exists
       console.error(err);
-      toast.error("Failed to submit question. Please try again.");
+      toast.error(err instanceof ApiError ? err.message : "Failed to submit question. Please try again.");
     } finally {
       setSubmitting(false);
     }

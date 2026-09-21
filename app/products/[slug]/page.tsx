@@ -29,8 +29,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   // TODO: swap for real fetches once products are seeded:
   const { product } = await getProduct(slug);
   if (!product) notFound();
+
   const { data,totalItems,totalPages } = await getProductReviews(slug, { page: 1 });
   const { data: questions } = await getProductQuestions(slug);
+
   const relatedRes = product.category
     ? await getProducts({ category: product.category.slug })
     : null;

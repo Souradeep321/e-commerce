@@ -25,7 +25,6 @@ async function Categories() {
   const { categories } = await getCategories();
   // console.log("categories", categories);
   const categoriesWithOutChildren = categories.filter((c) => c.parentId === null);
-  console.log("categoriesWithOutChildren", categoriesWithOutChildren);
   return <CategoryGrid categories={categoriesWithOutChildren} />;
 }
 

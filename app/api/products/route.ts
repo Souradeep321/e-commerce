@@ -1,5 +1,4 @@
-// /api/products
-// /api/products/[slug]       
+// /api/products    
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { handleApiError } from "@/lib/api-error-handler";
