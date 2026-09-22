@@ -213,6 +213,12 @@ export async function POST(req: Request) {
     }
     const { productId, productVariantId: variantId, quantity } = parsed.data;
 
+    console.log("POST /api/cart:", {
+      productId,
+      variantId,
+      quantity,
+    });
+
     // Verify product exists and is active
     const product = await prisma.product.findFirst({
       where: { id: productId, isActive: true },
@@ -225,6 +231,15 @@ export async function POST(req: Request) {
         { status: 404 }
       );
     }
+
+    console.log(
+      "Available variants:",
+      product.variants.map((v) => ({
+        id: v.id,
+        size: v.size,
+        stock: v.stock,
+      }))
+    );
 
     // Check stock availability
     let availableStock = 0;

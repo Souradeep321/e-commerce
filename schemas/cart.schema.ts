@@ -9,26 +9,26 @@ export const cartItemSchema = z
 
     quantity: z.number().int().min(1, "Quantity must be at least 1"),
   })
-  .superRefine((data, ctx) => {
-    const hasProduct = !!data.productId;
-    const hasVariant = !!data.productVariantId;
+  // .superRefine((data, ctx) => {
+  //   const hasProduct = !!data.productId;
+  //   const hasVariant = !!data.productVariantId;
 
-    if (!hasProduct && !hasVariant) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["productId"],
-        message: "Cart item must reference a product or a variant",
-      });
-    }
+  //   if (!hasProduct && !hasVariant) {
+  //     ctx.addIssue({
+  //       code: z.ZodIssueCode.custom,
+  //       path: ["productId"],
+  //       message: "Cart item must reference a product or a variant",
+  //     });
+  //   }
 
-    if (hasProduct && hasVariant) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["productVariantId"],
-        message: "Use either productId or productVariantId, not both",
-      });
-    }
-  });
+  //   if (hasProduct && hasVariant) {
+  //     ctx.addIssue({
+  //       code: z.ZodIssueCode.custom,
+  //       path: ["productVariantId"],
+  //       message: "Use either productId or productVariantId, not both",
+  //     });
+  //   }
+  // });
 
 /* ---------------- CART ---------------- */
 

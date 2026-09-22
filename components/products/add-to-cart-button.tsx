@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { addToCart, ApiError } from "@/lib/api";
 import { ProductDetail, ProductVariant } from "@/types/api/product.types";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface AddToCartButtonProps {
   product: ProductDetail;
@@ -13,7 +14,10 @@ interface AddToCartButtonProps {
 }
 
 export function AddToCartButton({ product, selectedVariant, quantity }: AddToCartButtonProps) {
+  console.log("addtocartbutton-product", product)
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const router = useRouter();
+  console.log("AddToCartButton - Selected Variant:", selectedVariant);
 
   const hasVariants = product.variants.length > 0;
   const needsSizeSelection = hasVariants && !selectedVariant;
@@ -33,23 +37,47 @@ export function AddToCartButton({ product, selectedVariant, quantity }: AddToCar
 
   async function handleAddToCart() {
     setStatus("loading");
+
     try {
-      await addToCart(
-        hasVariants
-          ? { productVariantId: selectedVariant!.id, quantity }
-          : { productId: product.id, quantity }
-      );
+      const payload = hasVariants
+        ? {
+          productId: product.id,
+          productVariantId: selectedVariant!.id,
+          quantity,
+        }
+        : {
+          productId: product.id,
+          quantity,
+        };
+
+      console.log("ADD TO CART DEBUG:", {
+        product,
+        productId: product.id,
+        selectedVariant,
+        selectedVariantId: selectedVariant?.id,
+        payload,
+        payloadJSON: JSON.stringify(payload),
+      });
+
+      const response = await addToCart(payload);
+
+      console.log("AddToCartButton - Add to Cart Response:", response);
+
       setStatus("idle");
-      toast.success("Added to cart!");
-      // TODO: trigger cart drawer/toast confirmation once that UI exists
+      toast.success(response.message || "Added to cart!");
+      router.refresh();
     } catch (err) {
+      console.error("AddToCartButton - ERROR:", err);
+
       setStatus("error");
-      toast.error("Failed to add to cart. Please try again.");
-      // TODO: surface real error message via toast once toast system exists
-      console.error(err instanceof ApiError ? err.message : err);
+
+      toast.error(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to add to cart. Please try again."
+      );
     }
   }
-
   return (
     <Button
       type="button"
