@@ -393,7 +393,6 @@ export async function PATCH(req: Request) {
     const rateLimitResponse = await checkRateLimit(writeRateLimit, identifier);
     if (rateLimitResponse) return rateLimitResponse;
 
-
     const { itemId, quantity } = await req.json();
 
     // Validation

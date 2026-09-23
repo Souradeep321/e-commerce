@@ -7,6 +7,7 @@ import { ProductSectionSkeleton } from "@/components/home/product-section-skelet
 import { PromoBanner } from "@/components/home/promo-banner";
 import { ValuePropStrip } from "@/components/home/value-prop-strip";
 import { getCategories, getProducts } from "@/lib/api";
+import {CartIcon} from "@/components/cart/cart-icon";
 
 /**
  * TEMPORARY async wrappers around mock data.
@@ -50,6 +51,10 @@ export default function Home() {
   return (
     <main className="bg-white">
       <Hero />
+
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <CartIcon />
+      </div>
 
       <Suspense fallback={<CategoryGridSkeleton />}>
         <Categories />
