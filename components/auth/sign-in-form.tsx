@@ -14,8 +14,10 @@ import { Eye, EyeOff } from "lucide-react";
 import { checkLoginRateLimit } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api";
 import { loginAndMergeCart } from "@/lib/auth-actions";
+import { useCart } from "@/providers/CartProvider";
 
 export function SignInForm() {
+  const { refresh } = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -46,6 +48,7 @@ export function SignInForm() {
 
       const result = await loginAndMergeCart(values.email, values.password);
       if (result?.ok) {
+        await refresh();
         router.push(callbackUrl);
         router.refresh();
       } else {

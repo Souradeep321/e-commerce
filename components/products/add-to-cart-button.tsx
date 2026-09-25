@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { addToCart, ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { ProductDetail, ProductVariant } from "@/types/api/product.types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/providers/CartProvider";
 
 interface AddToCartButtonProps {
   product: ProductDetail;
@@ -14,7 +15,8 @@ interface AddToCartButtonProps {
 }
 
 export function AddToCartButton({ product, selectedVariant, quantity }: AddToCartButtonProps) {
-  console.log("addtocartbutton-product", product)
+  // console.log("addtocartbutton-product", product)
+  const { addItem } = useCart()
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const router = useRouter();
   console.log("AddToCartButton - Selected Variant:", selectedVariant);
@@ -35,49 +37,25 @@ export function AddToCartButton({ product, selectedVariant, quantity }: AddToCar
         ? "Adding…"
         : "Add to Cart";
 
-  async function handleAddToCart() {
-    setStatus("loading");
+ async function handleAddToCart() {
+  setStatus("loading");
+  try {
+    const payload = hasVariants
+      ? { productId: product.id, productVariantId: selectedVariant!.id, quantity }
+      : { productId: product.id, quantity };
 
-    try {
-      const payload = hasVariants
-        ? {
-          productId: product.id,
-          productVariantId: selectedVariant!.id,
-          quantity,
-        }
-        : {
-          productId: product.id,
-          quantity,
-        };
+    const response = await addItem(payload);
 
-      console.log("ADD TO CART DEBUG:", {
-        product,
-        productId: product.id,
-        selectedVariant,
-        selectedVariantId: selectedVariant?.id,
-        payload,
-        payloadJSON: JSON.stringify(payload),
-      });
-
-      const response = await addToCart(payload);
-
-      console.log("AddToCartButton - Add to Cart Response:", response);
-
-      setStatus("idle");
-      toast.success(response.message || "Added to cart!");
-      router.refresh();
-    } catch (err) {
-      console.error("AddToCartButton - ERROR:", err);
-
-      setStatus("error");
-
-      toast.error(
-        err instanceof ApiError
-          ? err.message
-          : "Failed to add to cart. Please try again."
-      );
-    }
+    setStatus("idle");
+    toast.success(response.message || "Added to cart!");
+  } catch (err) {
+    setStatus("error");
+    toast.error(
+      err instanceof ApiError ? err.message : "Failed to add to cart. Please try again."
+    );
   }
+}
+
   return (
     <Button
       type="button"
@@ -90,3 +68,4 @@ export function AddToCartButton({ product, selectedVariant, quantity }: AddToCar
     </Button>
   );
 }
+
