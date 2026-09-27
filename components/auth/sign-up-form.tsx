@@ -14,7 +14,7 @@ import { registerAndLogin } from "@/lib/auth-actions";
 import { ApiError } from "@/lib/api";
 import { Spinner } from "@/components/ui/spinner";
 import { Eye, EyeOff } from "lucide-react";
-import { useCart } from "@/providers/CartProvider";
+import { useCart } from "@/lib/cart/use-cart";
 
 export function SignUpForm() {
   const router = useRouter();

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppQueryProvider } from "@/lib/query/query-provider";
 import AuthProvider from "@/providers/AuthProvider";
-import { CartProvider } from "@/providers/CartProvider";
-import { CartDrawer } from "@/components/cart/cart-drawer";
 import { UnverifiedEmailBanner } from "@/components/layout/unverified-email-banner";
+import { CartDrawer } from "@/components/cart/cart-drawer";
+import { CartSyncListener } from "@/components/cart/cart-sync-listener";
 import { Toaster } from "@/components/ui/sonner";
+import { CartIcon } from "@/components/cart/cart-icon";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,14 +29,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          <CartProvider>
+        <AppQueryProvider>
+          <AuthProvider>
+            <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+              <CartIcon />
+            </div>
             <UnverifiedEmailBanner />
             {children}
             <CartDrawer />
+            <CartSyncListener />
             <Toaster position="top-center" />
-          </CartProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </AppQueryProvider>
       </body>
     </html>
   );

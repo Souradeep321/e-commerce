@@ -14,10 +14,11 @@ import { Eye, EyeOff } from "lucide-react";
 import { checkLoginRateLimit } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api";
 import { loginAndMergeCart } from "@/lib/auth-actions";
-import { useCart } from "@/providers/CartProvider";
+import { useCart } from "@/lib/cart/use-cart";
 
 export function SignInForm() {
-  const { refresh } = useCart();
+const { refresh } = useCart();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";

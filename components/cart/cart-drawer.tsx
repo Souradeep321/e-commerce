@@ -5,16 +5,18 @@ import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
-import { useCart } from "@/providers/CartProvider";
 import { CartItemRow } from "./cart-item-row";
 import { formatPaise } from "@/lib/format";
+import { useCart } from "@/lib/cart/use-cart";
+import { useIsDrawerOpen, closeDrawer } from "@/lib/cart/drawer-store";
 
 export function CartDrawer() {
-  const { cart, loading, isDrawerOpen, closeDrawer } = useCart();
+  const { cart, loading } = useCart();
+  const isOpen = useIsDrawerOpen();
   const hasItems = !!cart && cart.items.length > 0;
 
   return (
-    <Sheet open={isDrawerOpen} onOpenChange={(open) => !open && closeDrawer()}>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && closeDrawer()}>
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-sm">
         <SheetHeader>
           <SheetTitle>Your Cart{hasItems ? ` (${cart!.itemCount})` : ""}</SheetTitle>

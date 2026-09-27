@@ -6,7 +6,7 @@ import { ApiError } from "@/lib/api";
 import { ProductDetail, ProductVariant } from "@/types/api/product.types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/providers/CartProvider";
+import { useCart } from "@/lib/cart/use-cart";
 
 interface AddToCartButtonProps {
   product: ProductDetail;
@@ -37,24 +37,27 @@ export function AddToCartButton({ product, selectedVariant, quantity }: AddToCar
         ? "Adding…"
         : "Add to Cart";
 
- async function handleAddToCart() {
-  setStatus("loading");
-  try {
-    const payload = hasVariants
-      ? { productId: product.id, productVariantId: selectedVariant!.id, quantity }
-      : { productId: product.id, quantity };
+  async function handleAddToCart() {
+    setStatus("loading");
+    try {
+      const payload = hasVariants
+        ? { productId: product.id, productVariantId: selectedVariant!.id, quantity }
+        : { productId: product.id, quantity };
 
-    const response = await addItem(payload);
+      const response = await addItem(payload, {
+        product: { id: product.id, name: product.name, slug: product.slug, price: product.price, images: product.images },
+        variant: selectedVariant ?? undefined,
+      });
 
-    setStatus("idle");
-    toast.success(response.message || "Added to cart!");
-  } catch (err) {
-    setStatus("error");
-    toast.error(
-      err instanceof ApiError ? err.message : "Failed to add to cart. Please try again."
-    );
+      setStatus("idle");
+      toast.success(response.message || "Added to cart!");
+    } catch (err) {
+      setStatus("error");
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to add to cart. Please try again."
+      );
+    }
   }
-}
 
   return (
     <Button

@@ -1,10 +1,11 @@
 "use client";
 
 import { ShoppingBag } from "lucide-react";
-import { useCart } from "@/providers/CartProvider";
+import { useCart } from "@/lib/cart/use-cart";
+import { openDrawer } from "@/lib/cart/drawer-store";
 
 export function CartIcon() {
-  const { itemCount, openDrawer } = useCart();
+  const { itemCount } = useCart();
 
   return (
     <button
